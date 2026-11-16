@@ -236,6 +236,8 @@ def site_verisi(g, site, arsiv, izlenen):
         ekle("gecen_yil", "Geçen yıl aynı dönem", son - timedelta(27 + 364), son - timedelta(364))
     for anahtar in sorted(a["aylar"], reverse=True):
         m = a["aylar"][anahtar]
+        if not m["toplam"][2]:
+            continue                                # sitenin verisi olmayan ay
         bas, bit = ay_araligi(anahtar)
         donemler.append({"kod": anahtar, "ad": ay_adi(anahtar), "aralik": f"{bas:%d.%m.%Y} – {bit:%d.%m.%Y}",
                          "gun": (bit - bas).days + 1, "toplam": m["toplam"],
@@ -248,7 +250,13 @@ def site_verisi(g, site, arsiv, izlenen):
         h = (gun - timedelta(gun.weekday())).isoformat()
         x = haftalar.setdefault(h, [0, 0, 0.0, 0])
         x[0] += r["clicks"]; x[1] += r["impressions"]; x[2] += r["position"] * r["impressions"]; x[3] += 1
-    seri = [[h, int(x[0]), int(x[1]), round(x[2] / x[1], 1) if x[1] else None] for h, x in haftalar.items() if x[3] == 7]
+    seri = [[h, int(x[0]), int(x[1]), round(x[2] / x[1], 1) if x[1] else None] for h, x in haftalar.items()]
+    if seri and haftalar[seri[-1][0]][3] < 7:
+        seri.pop()                                  # yarım kalan son hafta grafiği yanıltmasın
+    seri_tur = "hafta"
+    if len(seri) < 8:                               # yeni site: günlük göster
+        seri_tur = "gun"
+        seri = [[d, int(r["clicks"]), int(r["impressions"]), round(r["position"], 1)] for d, r in sorted(gunler.items())]
 
     # 5) Sayfada gösterilecek kelime/sayfa listesi (her biri dönemlere göre [sıra, tık, gös])
     def liste(tur, adet):
@@ -261,7 +269,7 @@ def site_verisi(g, site, arsiv, izlenen):
     izlenen_liste = izlenen_kelimeler().get(ad(site), [])
 
     return {
-        "site": ad(site), "mulk": site, "seri": seri,
+        "site": ad(site), "mulk": site, "seri": seri, "seri_tur": seri_tur,
         "donemler": [{k: d[k] for k in ("kod", "ad", "aralik", "gun", "toplam")} for d in donemler],
         "kelimeler": liste("kelimeler", SAYFADA_KELIME),
         "sayfalar": liste("sayfalar", SAYFADA_SAYFA),

@@ -53,7 +53,7 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 
 <div class="olcu" id="olcu"></div>
 
-<h2>Haftalık gidişat</h2>
+<h2 id="grafikBaslik">Haftalık gidişat</h2>
 <div class="kart">
   <div class="sekme" id="metrik" role="group" aria-label="Ölçü" style="margin-bottom:8px"></div>
   <div class="grafik" id="grafik"><svg role="img" aria-label="Haftalık grafik"></svg><div class="ipucu"></div></div>
@@ -145,6 +145,7 @@ function grafik(s) {
   const svg = $("#grafik svg"), ip = $("#grafik .ipucu");
   const i = {tik: 1, gos: 2, sira: 3}[durum.metrik], ters = durum.metrik === "sira";
   const veri = s.seri.filter(r => r[i] != null);
+  $("#grafikBaslik").textContent = s.seri_tur === "gun" ? "Günlük gidişat" : "Haftalık gidişat";
   const W = svg.clientWidth || 800, H = 260, sol = 52, sag = 12, ust = 12, alt = 28;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   if (veri.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--soluk)">Yeterli veri yok</text>`; return; }
@@ -183,7 +184,7 @@ function grafik(s) {
     cizgi.setAttribute("x1", xx); cizgi.setAttribute("x2", xx); cizgi.setAttribute("visibility", "visible");
     nokta.setAttribute("cx", xx); nokta.setAttribute("cy", y(r[i])); nokta.setAttribute("visibility", "visible");
     const g = new Date(r[0]);
-    ip.innerHTML = `<b>${g.toLocaleDateString("tr-TR", {day: "numeric", month: "long", year: "numeric"})} haftası</b><br>
+    ip.innerHTML = `<b>${g.toLocaleDateString("tr-TR", {day: "numeric", month: "long", year: "numeric"})}${s.seri_tur === "gun" ? "" : " haftası"}</b><br>
       Tıklama: ${sayi(r[1])}<br>Gösterim: ${sayi(r[2])}<br>Ortalama sıra: ${ondalik(r[3])}`;
     ip.style.display = "block";
     const sx = xx * kutu.width / W;
