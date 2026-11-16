@@ -36,7 +36,7 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 </style></head><body><div class="kap">
 <nav><a href="index.html">← Sitelerim</a><a href="rakipler.html">Rakip takibi</a></nav>
 <h1>SEO geçmişi</h1>
-<div class="soluk">Kaynak: Google Search Console · Son güncelleme: 16.11.2026 15:40 · Google verisi 2–3 gün geriden gelir</div>
+<div class="soluk">Kaynak: Google Search Console · Son güncelleme: 16.11.2026 15:41 · Google verisi 2–3 gün geriden gelir</div>
 <div id="uyarilar"></div>
 
 <h2>Tüm siteler <span class="soluk">(son 28 gün, önceki 28 güne göre)</span></h2>
@@ -221,7 +221,7 @@ function liste(s) {
       default: return r.simdi || r.eski;
     }
   });
-  const anahtar = r => (r.simdi || r.eski || [0, 0, 0])[2];
+  const anahtar = r => r.simdi ? r.simdi[2] : (r.eski ? r.eski[2] / 1e6 : 0);  // kaybolanlar sona
   if (durum.suzgec === "yukselen") satir.sort((a, b) => (b.eski[0] - b.simdi[0]) - (a.eski[0] - a.simdi[0]));
   else if (durum.suzgec === "dusen") satir.sort((a, b) => (a.eski[0] - a.simdi[0]) - (b.eski[0] - b.simdi[0]));
   else satir.sort((a, b) => anahtar(b) - anahtar(a));
