@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rakip takibi</title>
+<style>
+:root{--bg:#f6f7f9;--kart:#fff;--yazi:#1d2330;--soluk:#6b7280;--cizgi:#e5e7eb;--yesil:#16a34a;--mavi:#2563eb;--sari:#d97706;--kirmizi:#dc2626}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--kart:#181c24;--yazi:#e6e8ec;--soluk:#9aa1ad;--cizgi:#2a303b}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--yazi);font:15px/1.5 system-ui,sans-serif;padding:24px 16px}
+.kap{max-width:1000px;margin:auto}h1{margin:0 0 4px;font-size:24px}h2{font-size:17px;margin:24px 0 8px}a{color:inherit}
+nav a{color:var(--mavi);font-size:14px}.soluk{color:var(--soluk);font-size:13px}
+.kart{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:4px 16px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--cizgi)}th{color:var(--soluk);font-weight:500}tr:last-child td{border:0}
+.olay{list-style:none;margin:0;padding:0}.olay li{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--cizgi);align-items:baseline}.olay li:last-child{border:0}
+.olay a{text-decoration:none;font-weight:500;word-break:break-word}.olay small{display:block;color:var(--soluk);font-size:12px}
+.etiket{flex:none;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;color:#fff}
+.yeni{background:var(--yesil)}.guncel{background:var(--mavi)}.ana{background:var(--sari)}.silindi{background:var(--kirmizi)}.bos{color:var(--soluk)}
+</style></head><body><div class="kap">
+<nav><a href="index.html">← Sitelerim</a></nav>
+<h1>Rakip takibi</h1><div class="soluk">Son tarama: {{ZAMAN}} · Günde bir kez güncellenir</div>
+<h2>Takip edilen rakipler</h2>
+<div class="kart"><table><tr><th>Rakip</th><th>Sizin siteniz</th><th>Sayfa sayısı</th><th>Değişiklik</th><th>Son tarama</th></tr>
+{{OZET}}
+</table></div>
+<h2>Son değişiklikler</h2>
+<div class="kart">{{OLAYLAR}}</div>
+</div></body></html>

@@ -1,0 +1,8 @@
+# Özellikle takip etmek istediğiniz anahtar kelimeler (isteğe bağlı).
+# Biçim: site | kelime   — bunlar listede "İzlediklerim" süzgecinde her zaman görünür.
+# Search Console zaten en çok gösterilen 1000 kelimeyi kendiliğinden getirir; buraya yazmak şart değil.
+bodrum.gen.tr | bodrum nöbetçi eczane
+bodrum.gen.tr | bodrum dolmuş saatleri
+avsa.com | avşa otelleri
+avsa.com | avşa feribot saatleri
+izmir.gen.tr | izmir nöbetçi eczane

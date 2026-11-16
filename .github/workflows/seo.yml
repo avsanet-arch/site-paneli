@@ -1,0 +1,27 @@
+name: SEO geçmişini güncelle
+on:
+  schedule:
+    - cron: "30 5 * * *"   # her gün 08:30 (Türkiye)
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: kayit
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install google-auth requests
+      - run: python seo.py
+        env:
+          GSC_ANAHTAR: ${{ secrets.GSC_ANAHTAR }}
+      - name: Sonuçları kaydet
+        run: |
+          git config user.name "site-paneli"
+          git config user.email "site-paneli@users.noreply.github.com"
+          git add seo.html seo_arsiv.json
+          git commit -m "SEO: $(date -u +%Y-%m-%d)" || echo "değişiklik yok"
+          git pull --rebase && git push

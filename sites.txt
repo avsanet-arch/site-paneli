@@ -1,0 +1,6 @@
+# Her satıra bir site adresi yazın. # ile başlayan satırlar yok sayılır.
+https://avsa.com
+https://erdek.com
+https://izmir.gen.tr
+https://bodrum.gen.tr
+https://tatil.gen.tr

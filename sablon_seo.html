@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>SEO geçmişi</title>
+<style>
+:root{--bg:#f6f7f9;--kart:#fff;--yazi:#1d2330;--soluk:#6b7280;--cizgi:#e5e7eb;--izgara:#eef0f3;--seri:#2a78d6;--yesil:#16a34a;--kirmizi:#dc2626;--sari:#d97706;--mavi:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--kart:#181c24;--yazi:#e6e8ec;--soluk:#9aa1ad;--cizgi:#2a303b;--izgara:#232833;--seri:#3987e5;--yesil:#22c55e;--kirmizi:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--yazi);font:15px/1.5 system-ui,sans-serif;padding:24px 16px}
+.kap{max-width:1100px;margin:auto}h1{margin:0 0 4px;font-size:24px}h2{font-size:17px;margin:26px 0 10px}
+nav a{color:var(--mavi);font-size:14px;margin-right:14px}.soluk{color:var(--soluk);font-size:13px}
+.kart{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:14px 16px}
+.uyari{background:color-mix(in srgb,var(--sari) 14%,var(--kart));border:1px solid color-mix(in srgb,var(--sari) 40%,transparent);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:14px}
+.tablo{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{text-align:left;padding:8px 8px;border-bottom:1px solid var(--cizgi);white-space:nowrap}th{color:var(--soluk);font-weight:500;font-size:13px}
+td.s,th.s{text-align:right;font-variant-numeric:tabular-nums}tr:last-child td{border-bottom:0}
+td.k{white-space:normal;word-break:break-word;min-width:180px}
+tr.sec{cursor:pointer}tr.sec:hover{background:var(--izgara)}tr.aktif{background:color-mix(in srgb,var(--seri) 10%,transparent)}
+.ust{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0 6px}
+.sekme{display:flex;flex-wrap:wrap;gap:6px}
+.sekme button,.dugme{font:inherit;font-size:14px;border:1px solid var(--cizgi);background:var(--kart);color:var(--yazi);padding:6px 12px;border-radius:99px;cursor:pointer}
+.sekme button[aria-pressed=true]{background:var(--yazi);color:var(--kart);border-color:var(--yazi)}
+select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--cizgi);background:var(--kart);color:var(--yazi);padding:6px 10px;border-radius:8px}
+.olcu{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.olcu .kart small{color:var(--soluk);font-size:13px;display:block}.olcu b{font-size:26px;display:block;line-height:1.25;font-variant-numeric:tabular-nums}
+.olcu .eski{color:var(--soluk);font-size:13px}
+.iyi{color:var(--yesil)}.kotu{color:var(--kirmizi)}.notr{color:var(--soluk)}
+.grafik{position:relative}.grafik svg{display:block;width:100%;height:260px}
+.ipucu{position:absolute;pointer-events:none;background:var(--kart);border:1px solid var(--cizgi);border-radius:8px;padding:6px 10px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;white-space:nowrap}
+.dagilim{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.dagilim .kart b{font-size:22px;font-variant-numeric:tabular-nums}
+.etiket{font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.e-yeni{background:color-mix(in srgb,var(--yesil) 16%,transparent);color:var(--yesil)}
+.e-kayip{background:color-mix(in srgb,var(--kirmizi) 16%,transparent);color:var(--kirmizi)}
+.e-izle{background:color-mix(in srgb,var(--mavi) 16%,transparent);color:var(--mavi)}
+.k a{color:inherit}
+.bos{padding:20px;text-align:center;color:var(--soluk)}
+</style></head><body><div class="kap">
+<nav><a href="index.html">← Sitelerim</a><a href="rakipler.html">Rakip takibi</a></nav>
+<h1>SEO geçmişi</h1>
+<div class="soluk">Kaynak: Google Search Console · Son güncelleme: {{ZAMAN}} · Google verisi 2–3 gün geriden gelir</div>
+<div id="uyarilar"></div>
+
+<h2>Tüm siteler <span class="soluk">(son 28 gün, önceki 28 güne göre)</span></h2>
+<div class="kart tablo"><table id="genel"></table></div>
+
+<div class="ust">
+  <div class="sekme" id="siteSekme" role="group" aria-label="Site"></div>
+</div>
+<div class="ust">
+  <label class="soluk" for="karsi">Şimdiki durumu şununla karşılaştır:</label>
+  <select id="karsi"></select>
+  <span class="soluk" id="aralik"></span>
+</div>
+
+<div class="olcu" id="olcu"></div>
+
+<h2>Haftalık gidişat</h2>
+<div class="kart">
+  <div class="sekme" id="metrik" role="group" aria-label="Ölçü" style="margin-bottom:8px"></div>
+  <div class="grafik" id="grafik"><svg role="img" aria-label="Haftalık grafik"></svg><div class="ipucu"></div></div>
+</div>
+
+<h2>Kelimeler hangi sırada?</h2>
+<div class="dagilim" id="dagilim"></div>
+
+<div class="ust">
+  <div class="sekme" id="tur" role="group" aria-label="Liste"></div>
+</div>
+<div class="ust">
+  <div class="sekme" id="suzgec" role="group" aria-label="Süzgeç"></div>
+  <input type="search" id="ara" placeholder="Ara…" aria-label="Ara">
+</div>
+<div class="kart tablo"><table id="liste"></table></div>
+<div style="text-align:center;margin:12px"><button class="dugme" id="dahaFazla" hidden>Daha fazla göster</button></div>
+<p class="soluk">Sıra: Google'da ortalama kaçıncı sırada çıktığınız (1 = en üst). ▲ yeşil = yükseldi (daha iyi), ▼ kırmızı = düştü.
+Aylık dönemler 28–31 gün sürdüğü için tıklama/gösterim sayıları birebir eşit sürelerde değildir; sıralar doğrudan karşılaştırılabilir.</p>
+</div>
+<script>
+const V = {{VERI}};
+const $ = s => document.querySelector(s);
+const sayi = n => n == null ? "–" : Math.round(n).toLocaleString("tr-TR");
+const ondalik = n => n == null ? "–" : n.toLocaleString("tr-TR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+const yuzde = n => n == null ? "–" : "%" + n.toLocaleString("tr-TR", {maximumFractionDigits: 1});
+const kacis = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+let durum = {site: 0, karsi: 1, metrik: "tik", tur: "kelimeler", suzgec: "tumu", ara: "", goster: 100};
+
+function degisim(simdi, eski, ters) {
+  // ters: sıra için (küçük = iyi)
+  if (simdi == null || eski == null || eski === 0) return '<span class="notr">–</span>';
+  if (ters) {
+    const f = eski - simdi;
+    if (Math.abs(f) < 0.1) return '<span class="notr">aynı</span>';
+    return `<span class="${f > 0 ? "iyi" : "kotu"}">${f > 0 ? "▲" : "▼"} ${ondalik(Math.abs(f))}</span>`;
+  }
+  const f = (simdi - eski) / eski * 100;
+  if (Math.abs(f) < 0.5) return '<span class="notr">aynı</span>';
+  return `<span class="${f > 0 ? "iyi" : "kotu"}">${f > 0 ? "▲" : "▼"} ${yuzde(Math.abs(f))}</span>`;
+}
+function ilkOn(s, i) { return s.kelimeler.filter(k => k[i + 1] && k[i + 1][0] <= 10).length; }
+
+function uyarilar() {
+  let h = "";
+  if (V.ornek) h += '<div class="uyari"><b>Bu bir örnek.</b> Rakamlar uydurmadır; Search Console bağlanınca gerçek verilerinizle dolacak.</div>';
+  for (const e of V.hatalar) h += `<div class="uyari">Okunamadı: ${kacis(e)}</div>`;
+  if (!V.siteler.length) h += '<div class="uyari">Henüz veri yok.</div>';
+  $("#uyarilar").innerHTML = h;
+}
+
+function genel() {
+  let h = '<tr><th>Site</th><th class="s">Tıklama</th><th class="s"></th><th class="s">Gösterim</th><th class="s"></th><th class="s">Ort. sıra</th><th class="s"></th><th class="s">İlk 10\'daki kelime</th></tr>';
+  V.siteler.forEach((s, i) => {
+    const a = s.donemler[0].toplam, b = s.donemler[1] ? s.donemler[1].toplam : [];
+    h += `<tr class="sec${i === durum.site ? " aktif" : ""}" data-i="${i}"><td><b>${kacis(s.site)}</b></td>
+      <td class="s">${sayi(a[1])}</td><td class="s">${degisim(a[1], b[1])}</td>
+      <td class="s">${sayi(a[2])}</td><td class="s">${degisim(a[2], b[2])}</td>
+      <td class="s">${ondalik(a[0])}</td><td class="s">${degisim(a[0], b[0], true)}</td>
+      <td class="s">${ilkOn(s, 0)} <span class="soluk">(önce ${ilkOn(s, 1)})</span></td></tr>`;
+  });
+  $("#genel").innerHTML = h;
+  $("#genel").querySelectorAll("tr.sec").forEach(tr => tr.onclick = () => { durum.site = +tr.dataset.i; durum.karsi = 1; ciz(); });
+}
+
+function sekmeler(yer, secenekler, anahtar) {
+  $(yer).innerHTML = secenekler.map(([k, ad]) => `<button type="button" data-k="${k}" aria-pressed="${String(durum[anahtar]) === String(k)}">${ad}</button>`).join("");
+  $(yer).querySelectorAll("button").forEach(b => b.onclick = () => {
+    durum[anahtar] = isNaN(b.dataset.k) ? b.dataset.k : +b.dataset.k;
+    if (anahtar === "site") durum.karsi = 1;
+    durum.goster = 100; ciz();
+  });
+}
+
+function olcu(s) {
+  const a = s.donemler[0], b = s.donemler[durum.karsi];
+  const ctr = t => t && t[2] ? t[1] / t[2] * 100 : null;
+  const kutu = (ad, simdi, eski, bicim, ters) => `<div class="kart"><small>${ad}</small><b>${bicim(simdi)}</b>
+      ${degisim(simdi, eski, ters)} <span class="eski">önce ${bicim(eski)}</span></div>`;
+  $("#olcu").innerHTML =
+    kutu("Tıklama", a.toplam[1], b.toplam[1], sayi) +
+    kutu("Gösterim", a.toplam[2], b.toplam[2], sayi) +
+    kutu("Tıklama oranı", ctr(a.toplam), ctr(b.toplam), n => n == null ? "–" : "%" + ondalik(n)) +
+    kutu("Ortalama sıra", a.toplam[0], b.toplam[0], ondalik, true);
+  $("#aralik").textContent = `Şimdi: ${a.aralik} · Önce: ${b.aralik}`;
+}
+
+function grafik(s) {
+  const svg = $("#grafik svg"), ip = $("#grafik .ipucu");
+  const i = {tik: 1, gos: 2, sira: 3}[durum.metrik], ters = durum.metrik === "sira";
+  const veri = s.seri.filter(r => r[i] != null);
+  const W = svg.clientWidth || 800, H = 260, sol = 52, sag = 12, ust = 12, alt = 28;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  if (veri.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--soluk)">Yeterli veri yok</text>`; return; }
+  let min = Math.min(...veri.map(r => r[i])), max = Math.max(...veri.map(r => r[i]));
+  if (!ters) min = 0;
+  if (max === min) max = min + 1;
+  const pay = (max - min) * 0.08; if (ters) { min = Math.max(1, min - pay); } max += pay;
+  const x = k => sol + k / (veri.length - 1) * (W - sol - sag);
+  const y = v => ters ? ust + (v - min) / (max - min) * (H - ust - alt) : H - alt - (v - min) / (max - min) * (H - ust - alt);
+  let h = "";
+  for (let t = 0; t <= 4; t++) {
+    const v = min + (max - min) * t / 4, yy = y(v);
+    h += `<line x1="${sol}" x2="${W - sag}" y1="${yy}" y2="${yy}" stroke="var(--izgara)"/>
+      <text x="${sol - 8}" y="${yy + 4}" text-anchor="end" font-size="11" fill="var(--soluk)">${ters ? ondalik(v) : sayi(v)}</text>`;
+  }
+  let onceki = "";
+  veri.forEach((r, k) => {
+    const ay = r[0].slice(0, 7);
+    if (ay !== onceki && r[0].slice(8) <= "07") {
+      const [yil, a] = ay.split("-");
+      if (a === "01" || k === 0 || +a % 3 === 1)
+        h += `<text x="${x(k)}" y="${H - 8}" font-size="11" fill="var(--soluk)" text-anchor="middle">${["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"][+a - 1]}${a === "01" || k === 0 ? " " + yil : ""}</text>`;
+    }
+    onceki = ay;
+  });
+  h += `<path d="${veri.map((r, k) => (k ? "L" : "M") + x(k).toFixed(1) + " " + y(r[i]).toFixed(1)).join("")}" fill="none" stroke="var(--seri)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  h += `<line id="cizgi" y1="${ust}" y2="${H - alt}" stroke="var(--soluk)" stroke-dasharray="3 3" visibility="hidden"/>
+    <circle id="nokta" r="5" fill="var(--seri)" stroke="var(--kart)" stroke-width="2" visibility="hidden"/>
+    <rect x="${sol}" y="0" width="${W - sol - sag}" height="${H}" fill="transparent" id="alan"/>`;
+  svg.innerHTML = h;
+  const cizgi = svg.querySelector("#cizgi"), nokta = svg.querySelector("#nokta");
+  const goster = ev => {
+    const kutu = svg.getBoundingClientRect(), px = (ev.clientX - kutu.left) * W / kutu.width;
+    const k = Math.max(0, Math.min(veri.length - 1, Math.round((px - sol) / (W - sol - sag) * (veri.length - 1))));
+    const r = veri[k], xx = x(k);
+    cizgi.setAttribute("x1", xx); cizgi.setAttribute("x2", xx); cizgi.setAttribute("visibility", "visible");
+    nokta.setAttribute("cx", xx); nokta.setAttribute("cy", y(r[i])); nokta.setAttribute("visibility", "visible");
+    const g = new Date(r[0]);
+    ip.innerHTML = `<b>${g.toLocaleDateString("tr-TR", {day: "numeric", month: "long", year: "numeric"})} haftası</b><br>
+      Tıklama: ${sayi(r[1])}<br>Gösterim: ${sayi(r[2])}<br>Ortalama sıra: ${ondalik(r[3])}`;
+    ip.style.display = "block";
+    const sx = xx * kutu.width / W;
+    ip.style.left = Math.min(Math.max(0, sx - ip.offsetWidth / 2), kutu.width - ip.offsetWidth) + "px";
+    ip.style.top = (y(r[i]) * kutu.height / H - ip.offsetHeight - 12 < 0 ? y(r[i]) * kutu.height / H + 14 : y(r[i]) * kutu.height / H - ip.offsetHeight - 12) + "px";
+  };
+  const gizle = () => { ip.style.display = "none"; cizgi.setAttribute("visibility", "hidden"); nokta.setAttribute("visibility", "hidden"); };
+  const alan = svg.querySelector("#alan");
+  alan.onpointermove = goster; alan.onpointerdown = goster; alan.onpointerleave = gizle;
+}
+
+function dagilim(s) {
+  const kovalar = [["1–3. sıra", 0, 3], ["4–10. sıra", 3, 10], ["11–20. sıra", 10, 20], ["21–50. sıra", 20, 50], ["50'den sonra", 50, 1e9]];
+  const say = (j, a, b) => s.kelimeler.filter(k => k[j] && k[j][0] > a && k[j][0] <= b).length;
+  $("#dagilim").innerHTML = kovalar.map(([ad, a, b]) => {
+    const n = say(1, a, b), e = say(durum.karsi + 1, a, b), f = n - e;
+    return `<div class="kart"><small class="soluk">${ad}</small><br><b>${n}</b> kelime
+      <div class="soluk">önce ${e} ${f ? `<span class="${b > 10 ? "notr" : f > 0 ? "iyi" : "kotu"}">(${f > 0 ? "+" : ""}${f})</span>` : ""}</div></div>`;
+  }).join("");
+}
+
+function liste(s) {
+  const j = durum.karsi + 1, kayit = s[durum.tur], izlenen = new Set(s.izlenen || []);
+  const ara = durum.ara.toLocaleLowerCase("tr");
+  let satir = kayit.map(k => ({ad: k[0], simdi: k[1], eski: k[j]})).filter(r => {
+    if (ara && !r.ad.toLocaleLowerCase("tr").includes(ara)) return false;
+    const fark = r.simdi && r.eski ? r.eski[0] - r.simdi[0] : 0;
+    switch (durum.suzgec) {
+      case "yukselen": return fark >= 1;
+      case "dusen": return fark <= -1;
+      case "yeni": return r.simdi && !r.eski;
+      case "kayip": return !r.simdi && r.eski;
+      case "izlenen": return izlenen.has(r.ad);
+      default: return r.simdi || r.eski;
+    }
+  });
+  const anahtar = r => (r.simdi || r.eski || [0, 0, 0])[2];
+  if (durum.suzgec === "yukselen") satir.sort((a, b) => (b.eski[0] - b.simdi[0]) - (a.eski[0] - a.simdi[0]));
+  else if (durum.suzgec === "dusen") satir.sort((a, b) => (a.eski[0] - a.simdi[0]) - (b.eski[0] - b.simdi[0]));
+  else satir.sort((a, b) => anahtar(b) - anahtar(a));
+  const donem = s.donemler[durum.karsi].ad;
+  let h = `<tr><th>${durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa"}</th><th class="s">Sıra (${kacis(donem)})</th><th class="s">Sıra (şimdi)</th>
+    <th class="s">Değişim</th><th class="s">Tıklama (önce → şimdi)</th><th class="s">Gösterim (şimdi)</th></tr>`;
+  if (!satir.length) h += '<tr><td colspan="6" class="bos">Bu süzgeçte kayıt yok.</td></tr>';
+  for (const r of satir.slice(0, durum.goster)) {
+    let ad = durum.tur === "sayfalar"
+      ? `<a href="${kacis(r.ad)}" target="_blank" rel="noopener">${kacis(r.ad.replace(/^https?:\/\/(www\.)?[^/]+/, "") || "/")}</a>`
+      : kacis(r.ad);
+    if (r.simdi && !r.eski) ad += '<span class="etiket e-yeni">YENİ</span>';
+    if (!r.simdi && r.eski) ad += '<span class="etiket e-kayip">KAYBOLDU</span>';
+    if (izlenen.has(r.ad)) ad += '<span class="etiket e-izle">İZLENEN</span>';
+    h += `<tr><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"><b>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b></td>
+      <td class="s">${r.simdi && r.eski ? degisim(r.simdi[0], r.eski[0], true) : "–"}</td>
+      <td class="s">${r.eski ? sayi(r.eski[1]) : "–"} → ${r.simdi ? sayi(r.simdi[1]) : "–"}</td><td class="s">${r.simdi ? sayi(r.simdi[2]) : "–"}</td></tr>`;
+  }
+  $("#liste").innerHTML = h;
+  $("#dahaFazla").hidden = satir.length <= durum.goster;
+}
+
+function ciz() {
+  if (!V.siteler.length) return;
+  const s = V.siteler[durum.site];
+  if (durum.karsi >= s.donemler.length) durum.karsi = s.donemler.length - 1;
+  genel();
+  sekmeler("#siteSekme", V.siteler.map((x, i) => [i, x.site]), "site");
+  $("#karsi").innerHTML = s.donemler.slice(1).map((d, k) => `<option value="${k + 1}"${k + 1 === durum.karsi ? " selected" : ""}>${kacis(d.ad)}</option>`).join("");
+  sekmeler("#metrik", [["tik", "Tıklama"], ["gos", "Gösterim"], ["sira", "Ortalama sıra"]], "metrik");
+  sekmeler("#tur", [["kelimeler", "Anahtar kelimeler"], ["sayfalar", "Sayfalar"]], "tur");
+  const sz = [["tumu", "Tümü"], ["yukselen", "Yükselenler"], ["dusen", "Düşenler"], ["yeni", "Yeni çıkanlar"], ["kayip", "Kaybolanlar"]];
+  if (durum.tur === "kelimeler" && (s.izlenen || []).length) sz.push(["izlenen", "İzlediklerim"]);
+  sekmeler("#suzgec", sz, "suzgec");
+  olcu(s); grafik(s); dagilim(s); liste(s);
+}
+$("#karsi").onchange = e => { durum.karsi = +e.target.value; durum.goster = 100; ciz(); };
+$("#ara").oninput = e => { durum.ara = e.target.value; durum.goster = 100; liste(V.siteler[durum.site]); };
+$("#dahaFazla").onclick = () => { durum.goster += 100; liste(V.siteler[durum.site]); };
+addEventListener("resize", () => V.siteler.length && grafik(V.siteler[durum.site]));
+uyarilar(); ciz();
+</script>
+</body></html>

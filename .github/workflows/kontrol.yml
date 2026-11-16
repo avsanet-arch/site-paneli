@@ -1,0 +1,24 @@
+name: Siteleri kontrol et
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+concurrency: kayit
+permissions:
+  contents: write
+jobs:
+  kontrol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python kontrol.py
+      - name: Sonuçları kaydet
+        run: |
+          git config user.name "site-paneli"
+          git config user.email "site-paneli@users.noreply.github.com"
+          git add index.html gecmis.json
+          git commit -m "Kontrol: $(date -u +%Y-%m-%dT%H:%MZ)" || echo "değişiklik yok"
+          git pull --rebase && git push

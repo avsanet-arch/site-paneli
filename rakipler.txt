@@ -1,0 +1,29 @@
+# Takip edilecek rakipler. Satır biçimi:  adres | hangi sitenizin rakibi
+# Sadece alan adı yazarsanız (https://rakip.com) tüm site taranır: yeni/güncellenen/silinen sayfalar.
+# Belirli bir sayfa yazarsanız (https://rakip.com/avsa-otelleri) yalnızca o sayfanın içerik değişiklikleri izlenir.
+# Büyük rezervasyon sitelerinde (etstur, neredekal vb.) hep belirli sayfa kullanın.
+
+# avsa.com
+https://neredekal.com/avsa-adasi-otelleri/ | avsa.com
+https://neredekal.com/avsa-adasi-pansiyonlari/ | avsa.com
+https://www.etstur.com/Avsa-Adasi-Otelleri | avsa.com
+https://www.jollytur.com/marmara-avsa-otelleri | avsa.com
+
+# erdek.com
+https://neredekal.com/ocaklar-mah-pansiyonlari/ | erdek.com
+https://www.jollytur.com/erdek-otelleri | erdek.com
+https://www.enuygun.com/otel/erdek-6241801/ | erdek.com
+
+# bodrum.gen.tr
+https://www.tatilsepeti.com/bodrum-sehir-rehberi | bodrum.gen.tr
+https://www.otelz.com/bodrum-otelleri | bodrum.gen.tr
+https://e-yasamrehberi.com/seyahat-rehberi/bodrum-gezilecek-yerler.html | bodrum.gen.tr
+
+# tatil.gen.tr
+https://www.e-sehir.com/turkiye-haritasi/oteller.php | tatil.gen.tr
+https://www.flypgs.com/gezi-rehberi/turkiye | tatil.gen.tr
+https://www.tatilbudur.com/blog/gezilecek-yerler/yurtici/ | tatil.gen.tr
+
+# izmir.gen.tr: rakipler büyük haber siteleri; günlük değişen sayfalar (nöbetçi eczane) her gün "değişti" görünür.
+# İsterseniz başındaki # işaretini kaldırın.
+# https://www.haberturk.com/nobetci-eczaneler/izmir | izmir.gen.tr
