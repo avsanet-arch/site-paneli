@@ -41,8 +41,14 @@ class Google:
             import google.auth.transport.requests as gtr
         except ImportError:
             sys.exit("Önce şunu çalıştırın: pip install google-auth requests")
+        try:
+            bilgi = json.loads(metin.lstrip("\ufeff"))
+            assert isinstance(bilgi, dict) and bilgi.get("type") == "service_account"
+        except Exception:
+            sys.exit("GSC_ANAHTAR geçersiz: indirilen .json dosyasının içindeki yazının TAMAMI yapıştırılmalı "
+                     "({ ile başlar, } ile biter; içinde \"type\": \"service_account\" yazar).")
         self.kimlik = service_account.Credentials.from_service_account_info(
-            json.loads(metin), scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
+            bilgi, scopes=["https://www.googleapis.com/auth/webmasters.readonly"])
         self._istek = gtr.Request()
         self.eposta = self.kimlik.service_account_email
 
