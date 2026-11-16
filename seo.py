@@ -127,6 +127,12 @@ class Ornek:
                 out.append({"keys": [g.isoformat()], "clicks": round(sum(v[1] for v in t) / 3),
                             "impressions": round(gos), "position": sum(v[0] * v[2] for v in t) / 3 / max(gos, 1)})
             return out
+        if boyut in ("device", "country"):
+            rr = random.Random(f"{site}{boyut}{bas}")
+            adlar = ["MOBILE", "DESKTOP", "TABLET"] if boyut == "device" else ["tur", "deu", "gbr", "nld", "rus", "usa"]
+            pay = [0.7, 0.27, 0.03] if boyut == "device" else [0.86, 0.05, 0.03, 0.02, 0.02, 0.02]
+            return [{"keys": [k], "clicks": round(900 * p_ * rr.uniform(.8, 1.2)), "impressions": round(30000 * p_ * rr.uniform(.8, 1.2)),
+                     "position": rr.uniform(6, 14)} for k, p_ in zip(adlar, pay)]
         adaylar = self._kelimeler(site)
         if boyut == "page":
             ad = site.split(":")[-1]
@@ -189,6 +195,8 @@ def site_verisi(g, site, arsiv, izlenen):
     son = date.today() - timedelta(GECIKME)
     ilk = son - timedelta(486)                      # Search Console sınırı ~16 ay
     a = arsiv.setdefault(ad(site), {"aylar": {}})
+    if a.get("mulk") != site:                       # mülk değiştiyse (ör. Alan mülkü eklendi) arşivi yeniden kur
+        a["aylar"], a["mulk"] = {}, site
 
     # 1) Günlük toplamlar (grafik ve aylık özet)
     gunluk = g.sorgu(site, ilk, son, "date", 25000)
@@ -203,7 +211,7 @@ def site_verisi(g, site, arsiv, izlenen):
         if bit > son:
             break
         anahtar = ay.strftime("%Y-%m")
-        if anahtar not in a["aylar"] or a["aylar"][anahtar].get("eksik"):
+        if anahtar not in a["aylar"] or not a["aylar"][anahtar]["toplam"][2]:   # boş ay tekrar denenir
             satir = [gunler[d.isoformat()] for d in (bas + timedelta(i) for i in range((bit - bas).days + 1))
                      if d.isoformat() in gunler]
             gos = sum(r["impressions"] for r in satir)
@@ -243,6 +251,14 @@ def site_verisi(g, site, arsiv, izlenen):
                          "gun": (bit - bas).days + 1, "toplam": m["toplam"],
                          "kelimeler": m["kelimeler"], "sayfalar": m["sayfalar"]})
 
+    # Cihaz ve ülke kırılımı (son 28 gün ve önceki 28 gün)
+    def kirilim(boyut):
+        a_, b_ = son - timedelta(27), son - timedelta(55)
+        simdi = tablo(g.sorgu(site, a_, son, boyut, 10))
+        once = tablo(g.sorgu(site, b_, son - timedelta(28), boyut, 50))
+        return [[k, v, once.get(k)] for k, v in simdi.items()]
+    cihaz, ulke = kirilim("device"), kirilim("country")
+
     # 4) Haftalık grafik serisi
     haftalar = {}
     for d, r in sorted(gunler.items()):
@@ -273,8 +289,62 @@ def site_verisi(g, site, arsiv, izlenen):
         "donemler": [{k: d[k] for k in ("kod", "ad", "aralik", "gun", "toplam")} for d in donemler],
         "kelimeler": liste("kelimeler", SAYFADA_KELIME),
         "sayfalar": liste("sayfalar", SAYFADA_SAYFA),
-        "izlenen": izlenen_liste,
+        "izlenen": izlenen_liste, "cihaz": cihaz, "ulke": ulke,
     }
+
+
+# ---------------------------------------------------------------- Bing (isteğe bağlı)
+BING_API = "https://ssl.bing.com/webmaster/api.svc/json/"
+
+def bing_cagir(yontem, anahtar, **param):
+    from urllib.parse import urlencode
+    url = BING_API + yontem + "?" + urlencode(dict(param, apikey=anahtar))
+    with urlopen(Request(url, headers={"Content-Type": "application/json; charset=utf-8"}), timeout=60) as y:
+        return json.load(y).get("d") or []
+
+def bing_tarih(t):
+    m = re.search(r"/Date\((\d+)", t or "")
+    return datetime.fromtimestamp(int(m.group(1)) / 1000, timezone.utc).date() if m else None
+
+def bing_verisi(anahtar, siteler):
+    """Bing Webmaster Tools: site başına son 28 gün / önceki 28 gün tıklama, gösterim ve kelimeler."""
+    out = {}
+    try:
+        bing_siteler = {ad(s["Url"]): s["Url"] for s in bing_cagir("GetUserSites", anahtar) if s.get("IsVerified")}
+    except Exception as e:
+        print("Bing hatası:", e)
+        return out, [f"Bing: {e}"]
+    hatalar = []
+    for a_ in siteler:
+        url = bing_siteler.get(a_)
+        if not url:
+            continue
+        try:
+            bugun = date.today()
+            gunluk = [(bing_tarih(r.get("Date")), r) for r in bing_cagir("GetRankAndTrafficStats", anahtar, siteUrl=url)]
+            kel = [(bing_tarih(r.get("Date")), r) for r in bing_cagir("GetQueryStats", anahtar, siteUrl=url)]
+            def toplam(bas, bit):
+                t = [r for d, r in gunluk if d and bas <= d <= bit]
+                return [None, sum(r.get("Clicks", 0) for r in t), sum(r.get("Impressions", 0) for r in t)]
+            def kelimeler(bas, bit):
+                k = {}
+                for d, r in kel:
+                    if d and bas <= d <= bit and r.get("Query"):
+                        x = k.setdefault(r["Query"], [0.0, 0, 0])
+                        x[0] += r.get("AvgImpressionPosition", 0) * r.get("Impressions", 0)
+                        x[1] += r.get("Clicks", 0); x[2] += r.get("Impressions", 0)
+                return {q: [round(x[0] / x[2], 1) if x[2] else None, x[1], x[2]] for q, x in k.items()}
+            s1, s0 = bugun - timedelta(28), bugun - timedelta(56)
+            simdi, once = kelimeler(s1, bugun), kelimeler(s0, s1 - timedelta(1))
+            secim = sorted(simdi, key=lambda q: -simdi[q][2])[:300]
+            secim += [q for q in sorted(once, key=lambda q: -once[q][2])[:100] if q not in simdi]
+            seri = sorted([[d.isoformat(), r.get("Clicks", 0), r.get("Impressions", 0)] for d, r in gunluk if d])
+            out[a_] = {"mulk": url, "simdi": toplam(s1, bugun), "once": toplam(s0, s1 - timedelta(1)),
+                       "kelimeler": [[q, simdi.get(q), once.get(q)] for q in secim], "seri": seri[-180:]}
+        except Exception as e:
+            print("  Bing hatası:", a_, e)
+            hatalar.append(f"Bing {a_}: {e}")
+    return out, hatalar
 
 
 def main():
@@ -296,6 +366,20 @@ def main():
         except Exception as e:
             print("  hata:", e)
             hatalar.append(f"{ad(s)}: {e}")
+    if ornek and veriler:                           # örnekte Bing kutusunu da göster
+        v = veriler[0]
+        v["bing"] = {"mulk": "https://www." + v["site"] + "/", "simdi": [None, 412, 9800], "once": [None, 350, 9100],
+                     "kelimeler": [[k[0], [round(k[1][0] * 0.8, 1), k[1][1] // 4, k[1][2] // 5] if k[1] else None,
+                                    [round(k[1][0] * 0.9, 1), k[1][1] // 5, k[1][2] // 5] if k[1] else None] for k in v["kelimeler"][:40]],
+                     "seri": [[r_[0], r_[1] // 9, r_[2] // 9] for r_ in v["seri"][-26:]]}
+    bing_anahtar = os.environ.get("BING_ANAHTAR", "").strip()
+    if bing_anahtar and not ornek:
+        print("Bing verisi okunuyor")
+        bing, bh = bing_verisi(bing_anahtar, [v["site"] for v in veriler])
+        hatalar += bh
+        for v in veriler:
+            if v["site"] in bing:
+                v["bing"] = bing[v["site"]]
     if not ornek:
         with open(ARSIV, "w", encoding="utf-8") as f:
             json.dump(arsiv, f, ensure_ascii=False, separators=(",", ":"))

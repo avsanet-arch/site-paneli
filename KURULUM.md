@@ -45,6 +45,9 @@ Karşılaştırma: önceki 28 gün, geçen yılın aynı dönemi ya da geçmişt
 Veri ücretsiz Google Search Console'dan gelir (16 ay geriye). `seo_arsiv.json` her ayı saklar; 16 aydan eskiler de kaybolmaz.
 Her gün 08:30'da güncellenir. Denemek için: `python3 seo.py --ornek` (uydurma veriyle).
 
+Sayfada ayrıca: cihaz ve ülke kırılımı, "Fırsatlar" süzgeci (4–20. sıradaki çok aranan kelimeler), bir kelimeye tıklayınca
+o kelimenin ay ay sıra geçmişi. Bing bağlıysa ayrı bir Bing bölümü.
+
 ### Bir kerelik kurulum (yaklaşık 15 dakika)
 1. https://console.cloud.google.com adresine Gmail hesabınızla girin, üstten **yeni proje** açın (adı: site-paneli).
 2. Arama kutusuna **Google Search Console API** yazın, açılan sayfada **Etkinleştir**'e basın.
@@ -59,3 +62,17 @@ Her gün 08:30'da güncellenir. Denemek için: `python3 seo.py --ornek` (uydurma
 
 Not: GitHub Pages ücretsiz planda yalnızca herkese açık depoda çalışır; o zaman bu sayfadaki rakamları adresi bilen herkes görebilir
 (sayfa Google'a kapalıdır). İstemezseniz depoyu gizli tutup `seo.html`'i indirip bilgisayarınızda açabilirsiniz.
+
+### Bing'i bağlamak (isteğe bağlı, ücretsiz)
+1. https://www.bing.com/webmasters adresine girin (siteleriniz orada doğrulanmış olmalı; Search Console'dan "içe aktar" ile tek tıkla eklenebilir).
+2. Sağ üstteki dişli (Ayarlar) > **API Access** > **API Key** > anahtarı oluşturun ve kopyalayın.
+3. GitHub deposunda **Settings > Secrets and variables > Actions > New repository secret**: ad `BING_ANAHTAR`, değer kopyaladığınız anahtar.
+Ertesi sabah SEO sayfasında Bing bölümü dolar.
+
+## Yeni adres eklemek
+Dosyaları GitHub'da depo sayfasında dosyaya tıklayıp sağ üstteki kalem simgesiyle düzenleyin, alttan **Commit changes** deyin.
+- **SEO sayfasına yeni site**: dosya düzenlemek gerekmez. Yeni sitenin Search Console mülküne (tercihen "Alan" mülkü)
+  `seo-okuyucu@my-project-1520717025362.iam.gserviceaccount.com` adresini **Kısıtlı** izinle ekleyin. Ertesi sabah kendiliğinden gelir.
+- **Takip edilecek özel kelime**: `kelimeler.txt` dosyasına `site | kelime` biçiminde satır ekleyin (ör. `bodrum.gen.tr | bodrum nöbetçi eczane`).
+- **Ayakta mı / hız / SSL takibine yeni site**: `sites.txt` dosyasına `https://yenisite.com` satırı ekleyin.
+- **Rakip takibine yeni rakip**: `rakipler.txt` dosyasına `https://rakip.com/sayfa | sizinsiteniz.com` satırı ekleyin.

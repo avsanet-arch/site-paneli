@@ -33,11 +33,29 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 .e-izle{background:color-mix(in srgb,var(--mavi) 16%,transparent);color:var(--mavi)}
 .k a{color:inherit}
 .bos{padding:20px;text-align:center;color:var(--soluk)}
+details.bilgi{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:10px 16px;margin:14px 0;font-size:14px}
+details.bilgi summary{cursor:pointer;font-weight:600}details.bilgi ul{margin:8px 0;padding-left:20px}details.bilgi li{margin:4px 0}
+.ikili{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}
+.ikili h3{font-size:14px;margin:0 0 6px}
+tr.acilir{cursor:pointer}tr.acilir:hover{background:var(--izgara)}
+tr.detay td{background:var(--izgara);white-space:normal}
+.mini{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}.mini svg{display:block;width:100%;max-width:520px;height:auto;margin-top:6px}
+.mini table{width:auto;font-size:13px}.mini td,.mini th{padding:3px 8px}
+.e-firsat{background:color-mix(in srgb,var(--sari) 18%,transparent);color:var(--sari)}
 </style></head><body><div class="kap">
 <nav><a href="index.html">← Sitelerim</a><a href="rakipler.html">Rakip takibi</a></nav>
 <h1>SEO geçmişi</h1>
 <div class="soluk">Kaynak: Google Search Console · Son güncelleme: {{ZAMAN}} · Google verisi 2–3 gün geriden gelir</div>
 <div id="uyarilar"></div>
+<details class="bilgi"><summary>Bu sayfa nasıl okunur?</summary>
+<ul>
+<li><b>Rakamlar Google'dan gelir.</b> Google Search Console'un sizin siteniz için kaydettiği gerçek arama verisidir: insanlar Google'da ne aradı, sitenizi kaç kez gördü (gösterim), kaç kez tıkladı (tıklama), siteniz kaçıncı sıradaydı.</li>
+<li><b>Sıra</b> = o kelimede Google'da ortalama kaçıncı sırada çıktığınız. 1 en üst; 1–10 ilk sayfa. Sayı küçüldükçe iyidir.</li>
+<li><b>Karşılaştırma:</b> "Son 28 gün" her zaman şimdiki durumdur. Üstteki seçimle önceki 28 günü, geçen yılın aynı dönemini ya da geçmişteki bir ayı seçip "o zaman neredeydim" görebilirsiniz.</li>
+<li><b>Bir kelimeye tıklayın:</b> o kelimenin ay ay sıra geçmişi açılır.</li>
+<li><b>Fırsatlar:</b> 4–20. sıradaki, çok aranan kelimeler. Bu sayfaları biraz güçlendirmek (başlık, içerik, iç bağlantı) en hızlı tıklama artışını getirir.</li>
+<li>Google verisi 2–3 gün geriden gelir; sayfa her sabah 08:30'da kendiliğinden yenilenir. Bing verisi ayrı bölümdedir (bağlandıysa).</li>
+</ul></details>
 
 <h2>Tüm siteler <span class="soluk">(son 28 gün, önceki 28 güne göre)</span></h2>
 <div class="kart tablo"><table id="genel"></table></div>
@@ -53,6 +71,7 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 
 <div class="olcu" id="olcu"></div>
 
+<div class="ikili" id="kirilim"></div>
 <h2 id="grafikBaslik">Haftalık gidişat</h2>
 <div class="kart">
   <div class="sekme" id="metrik" role="group" aria-label="Ölçü" style="margin-bottom:8px"></div>
@@ -71,6 +90,8 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 </div>
 <div class="kart tablo"><table id="liste"></table></div>
 <div style="text-align:center;margin:12px"><button class="dugme" id="dahaFazla" hidden>Daha fazla göster</button></div>
+<h2>Bing <span class="soluk">(Microsoft arama motoru; son 28 gün, önceki 28 güne göre)</span></h2>
+<div id="bing"></div>
 <p class="soluk">Sıra: Google'da ortalama kaçıncı sırada çıktığınız (1 = en üst). ▲ yeşil = yükseldi (daha iyi), ▼ kırmızı = düştü.
 Aylık dönemler 28–31 gün sürdüğü için tıklama/gösterim sayıları birebir eşit sürelerde değildir; sıralar doğrudan karşılaştırılabilir.</p>
 </div>
@@ -206,10 +227,62 @@ function dagilim(s) {
   }).join("");
 }
 
+const ULKE = {tur: "Türkiye", deu: "Almanya", gbr: "Birleşik Krallık", nld: "Hollanda", rus: "Rusya", usa: "ABD", fra: "Fransa",
+  aut: "Avusturya", bel: "Belçika", che: "İsviçre", ukr: "Ukrayna", aze: "Azerbaycan", bgr: "Bulgaristan", swe: "İsveç", dnk: "Danimarka",
+  pol: "Polonya", ita: "İtalya", esp: "İspanya", grc: "Yunanistan", irn: "İran", irq: "Irak", kaz: "Kazakistan", cyp: "Kıbrıs"};
+const CIHAZ = {MOBILE: "Telefon", DESKTOP: "Bilgisayar", TABLET: "Tablet"};
+function kirilim(s) {
+  const tablo = (baslik, satirlar, adla) => {
+    if (!satirlar || !satirlar.length) return "";
+    let h = `<div class="kart tablo"><h3>${baslik}</h3><table><tr><th></th><th class="s">Tıklama</th><th class="s"></th><th class="s">Gösterim</th><th class="s">Sıra</th></tr>`;
+    for (const [k, a, b] of satirlar.slice(0, 8))
+      h += `<tr><td>${kacis(adla(k))}</td><td class="s">${sayi(a[1])}</td><td class="s">${degisim(a[1], b && b[1])}</td><td class="s">${sayi(a[2])}</td><td class="s">${ondalik(a[0])}</td></tr>`;
+    return h + "</table></div>";
+  };
+  $("#kirilim").innerHTML = tablo("Cihaza göre (son 28 gün)", s.cihaz, k => CIHAZ[k] || k) +
+    tablo("Ülkeye göre (son 28 gün)", s.ulke, k => ULKE[k] || k.toUpperCase());
+}
+function bing(s) {
+  const b = s.bing;
+  if (!b) { $("#bing").innerHTML = '<div class="kart soluk">Bing henüz bağlı değil. Bağlamak için KURULUM.md\'deki "Bing" adımlarına bakın (ücretsiz, 5 dakika).</div>'; return; }
+  let h = `<div class="olcu"><div class="kart"><small>Tıklama</small><b>${sayi(b.simdi[1])}</b>${degisim(b.simdi[1], b.once[1])} <span class="eski">önce ${sayi(b.once[1])}</span></div>
+    <div class="kart"><small>Gösterim</small><b>${sayi(b.simdi[2])}</b>${degisim(b.simdi[2], b.once[2])} <span class="eski">önce ${sayi(b.once[2])}</span></div></div>`;
+  h += `<div class="kart tablo" style="margin-top:12px"><table><tr><th>Bing'de aranan kelime</th><th class="s">Sıra (önce)</th><th class="s">Sıra (şimdi)</th><th class="s">Değişim</th><th class="s">Tıklama</th><th class="s">Gösterim</th></tr>`;
+  if (!b.kelimeler.length) h += '<tr><td colspan="6" class="bos">Bing bu dönem için kelime vermedi.</td></tr>';
+  for (const [q, a, o] of b.kelimeler.slice(0, 50))
+    h += `<tr><td class="k">${kacis(q)}</td><td class="s">${o ? ondalik(o[0]) : "–"}</td><td class="s"><b>${a ? ondalik(a[0]) : "–"}</b></td>
+      <td class="s">${a && o ? degisim(a[0], o[0], true) : "–"}</td><td class="s">${a ? sayi(a[1]) : "–"}</td><td class="s">${a ? sayi(a[2]) : "–"}</td></tr>`;
+  $("#bing").innerHTML = h + "</table></div>";
+}
+function gecmis(s, kayit) {
+  // kelimenin ay ay sıra geçmişi (eskiden yeniye)
+  const aylar = s.donemler.map((d, i) => [d, kayit[i + 1]]).filter(([d]) => /^\d{4}-\d{2}$/.test(d.kod)).reverse();
+  const nok = aylar.filter(([, v]) => v);
+  let svg = "";
+  if (nok.length >= 2) {
+    const W = 520, H = 120, sol = 34, sag = 10, ust = 10, alt = 22;
+    const vs = nok.map(([, v]) => v[0]); let mn = Math.max(1, Math.min(...vs) - 1), mx = Math.max(...vs) + 1;
+    const x = k => sol + k / (aylar.length - 1) * (W - sol - sag), y = v => ust + (v - mn) / (mx - mn) * (H - ust - alt);
+    let yol = "", acik = false;
+    aylar.forEach(([d, v], k) => { if (v) { yol += (acik ? "L" : "M") + x(k).toFixed(1) + " " + y(v[0]).toFixed(1); acik = true; } else acik = false; });
+    svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Aylara göre sıra">
+      <text x="${sol - 6}" y="${y(mn) + 4}" text-anchor="end" font-size="10" fill="var(--soluk)">${ondalik(mn)}</text>
+      <text x="${sol - 6}" y="${y(mx) + 4}" text-anchor="end" font-size="10" fill="var(--soluk)">${ondalik(mx)}</text>
+      <line x1="${sol}" x2="${W - sag}" y1="${y(mn)}" y2="${y(mn)}" stroke="var(--izgara)"/><line x1="${sol}" x2="${W - sag}" y1="${y(mx)}" y2="${y(mx)}" stroke="var(--izgara)"/>
+      <path d="${yol}" fill="none" stroke="var(--seri)" stroke-width="2" stroke-linejoin="round"/>
+      ${aylar.map(([d, v], k) => v ? `<circle cx="${x(k)}" cy="${y(v[0])}" r="3.5" fill="var(--seri)"><title>${d.ad}: ${ondalik(v[0])}. sıra</title></circle>` : "").join("")}
+      <text x="${sol}" y="${H - 6}" font-size="10" fill="var(--soluk)">${aylar[0][0].ad}</text>
+      <text x="${W - sag}" y="${H - 6}" font-size="10" fill="var(--soluk)" text-anchor="end">${aylar[aylar.length - 1][0].ad}</text></svg>`;
+  } else svg = '<div class="soluk">Ay ay geçmiş için yeterli veri yok.</div>';
+  const t = '<table><tr><th>Ay</th><th class="s">Sıra</th><th class="s">Tıklama</th><th class="s">Gösterim</th></tr>' +
+    aylar.slice().reverse().map(([d, v]) => `<tr><td>${d.ad}</td><td class="s">${v ? ondalik(v[0]) : "–"}</td><td class="s">${v ? sayi(v[1]) : "–"}</td><td class="s">${v ? sayi(v[2]) : "–"}</td></tr>`).join("") + "</table>";
+  return `<div class="mini"><div style="flex:1;min-width:260px"><b>Aylara göre sıra</b> <span class="soluk">(yukarı = daha iyi)</span>${svg}</div><div class="tablo" style="max-height:240px;overflow:auto">${t}</div></div>`;
+}
+
 function liste(s) {
   const j = durum.karsi + 1, kayit = s[durum.tur], izlenen = new Set(s.izlenen || []);
   const ara = durum.ara.toLocaleLowerCase("tr");
-  let satir = kayit.map(k => ({ad: k[0], simdi: k[1], eski: k[j]})).filter(r => {
+  let satir = kayit.map(k => ({ad: k[0], simdi: k[1], eski: k[j], k})).filter(r => {
     if (ara && !r.ad.toLocaleLowerCase("tr").includes(ara)) return false;
     const fark = r.simdi && r.eski ? r.eski[0] - r.simdi[0] : 0;
     switch (durum.suzgec) {
@@ -218,6 +291,7 @@ function liste(s) {
       case "yeni": return r.simdi && !r.eski;
       case "kayip": return !r.simdi && r.eski;
       case "izlenen": return izlenen.has(r.ad);
+      case "firsat": return r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20;
       default: return r.simdi || r.eski;
     }
   });
@@ -236,11 +310,21 @@ function liste(s) {
     if (r.simdi && !r.eski) ad += '<span class="etiket e-yeni">YENİ</span>';
     if (!r.simdi && r.eski) ad += '<span class="etiket e-kayip">KAYBOLDU</span>';
     if (izlenen.has(r.ad)) ad += '<span class="etiket e-izle">İZLENEN</span>';
-    h += `<tr><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"><b>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b></td>
+    if (r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20) ad += '<span class="etiket e-firsat">FIRSAT</span>';
+    const sira = kayit.indexOf(r.k);
+    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"><b>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b></td>
       <td class="s">${r.simdi && r.eski ? degisim(r.simdi[0], r.eski[0], true) : "–"}</td>
       <td class="s">${r.eski ? sayi(r.eski[1]) : "–"} → ${r.simdi ? sayi(r.simdi[1]) : "–"}</td><td class="s">${r.simdi ? sayi(r.simdi[2]) : "–"}</td></tr>`;
   }
   $("#liste").innerHTML = h;
+  $("#liste").querySelectorAll("tr.acilir").forEach(tr => tr.onclick = ev => {
+    if (ev.target.closest("a")) return;
+    const sonraki = tr.nextElementSibling;
+    if (sonraki && sonraki.classList.contains("detay")) { sonraki.remove(); return; }
+    const d = document.createElement("tr"); d.className = "detay";
+    d.innerHTML = `<td colspan="6">${gecmis(s, kayit[+tr.dataset.i])}</td>`;
+    tr.after(d);
+  });
   $("#dahaFazla").hidden = satir.length <= durum.goster;
 }
 
@@ -253,10 +337,10 @@ function ciz() {
   $("#karsi").innerHTML = s.donemler.slice(1).map((d, k) => `<option value="${k + 1}"${k + 1 === durum.karsi ? " selected" : ""}>${kacis(d.ad)}</option>`).join("");
   sekmeler("#metrik", [["tik", "Tıklama"], ["gos", "Gösterim"], ["sira", "Ortalama sıra"]], "metrik");
   sekmeler("#tur", [["kelimeler", "Anahtar kelimeler"], ["sayfalar", "Sayfalar"]], "tur");
-  const sz = [["tumu", "Tümü"], ["yukselen", "Yükselenler"], ["dusen", "Düşenler"], ["yeni", "Yeni çıkanlar"], ["kayip", "Kaybolanlar"]];
+  const sz = [["tumu", "Tümü"], ["yukselen", "Yükselenler"], ["dusen", "Düşenler"], ["yeni", "Yeni çıkanlar"], ["kayip", "Kaybolanlar"], ["firsat", "Fırsatlar"]];
   if (durum.tur === "kelimeler" && (s.izlenen || []).length) sz.push(["izlenen", "İzlediklerim"]);
   sekmeler("#suzgec", sz, "suzgec");
-  olcu(s); grafik(s); dagilim(s); liste(s);
+  olcu(s); kirilim(s); grafik(s); dagilim(s); liste(s); bing(s);
 }
 $("#karsi").onchange = e => { durum.karsi = +e.target.value; durum.goster = 100; ciz(); };
 $("#ara").oninput = e => { durum.ara = e.target.value; durum.goster = 100; liste(V.siteler[durum.site]); };
