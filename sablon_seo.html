@@ -221,7 +221,7 @@ function liste(s) {
       default: return r.simdi || r.eski;
     }
   });
-  const anahtar = r => (r.simdi || r.eski || [0, 0, 0])[2];
+  const anahtar = r => r.simdi ? r.simdi[2] : (r.eski ? r.eski[2] / 1e6 : 0);  // kaybolanlar sona
   if (durum.suzgec === "yukselen") satir.sort((a, b) => (b.eski[0] - b.simdi[0]) - (a.eski[0] - a.simdi[0]));
   else if (durum.suzgec === "dusen") satir.sort((a, b) => (a.eski[0] - a.simdi[0]) - (b.eski[0] - b.simdi[0]));
   else satir.sort((a, b) => anahtar(b) - anahtar(a));
