@@ -1,21 +1,34 @@
 name: Rakipleri tara
 on:
   schedule:
-    - cron: "0 4 * * *"   # her gün 07:00 (Türkiye)
+    - cron: "13 4 * * *"
+    - cron: "43 6 * * *"
+    - cron: "23 10 * * *"
   workflow_dispatch:
 permissions:
   contents: write
-concurrency: kayit
+concurrency: kayit-rakip
 jobs:
   rakip:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+      - name: Bugün zaten çalıştı mı?
+        id: bugun
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && git log --format=%s | grep -q "^Rakip taraması: $(date -u +%Y-%m-%d)"; then
+            echo "atla=1" >> "$GITHUB_OUTPUT"; echo "Bugün zaten güncellendi, atlanıyor."
+          fi
       - uses: actions/setup-python@v5
+        if: steps.bugun.outputs.atla != '1'
         with:
           python-version: "3.12"
       - run: python rakip.py
+        if: steps.bugun.outputs.atla != '1'
       - name: Sonuçları kaydet
+        if: steps.bugun.outputs.atla != '1'
         run: |
           git config user.name "site-paneli"
           git config user.email "site-paneli@users.noreply.github.com"

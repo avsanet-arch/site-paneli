@@ -1,9 +1,9 @@
 name: Siteleri kontrol et
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
-concurrency: kayit
+concurrency: kayit-kontrol
 permissions:
   contents: write
 jobs:

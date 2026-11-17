@@ -1,24 +1,38 @@
 name: SEO geçmişini güncelle
 on:
   schedule:
-    - cron: "30 5 * * *"   # her gün 08:30 (Türkiye)
+    - cron: "47 5 * * *"
+    - cron: "17 7 * * *"
+    - cron: "37 10 * * *"
   workflow_dispatch:
 permissions:
   contents: write
-concurrency: kayit
+concurrency: kayit-seo
 jobs:
   seo:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+      - name: Bugün zaten çalıştı mı?
+        id: bugun
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && git log --format=%s | grep -q "^SEO: $(date -u +%Y-%m-%d)"; then
+            echo "atla=1" >> "$GITHUB_OUTPUT"; echo "Bugün zaten güncellendi, atlanıyor."
+          fi
       - uses: actions/setup-python@v5
+        if: steps.bugun.outputs.atla != '1'
         with:
           python-version: "3.12"
       - run: pip install google-auth requests
+        if: steps.bugun.outputs.atla != '1'
       - run: python seo.py
+        if: steps.bugun.outputs.atla != '1'
         env:
           GSC_ANAHTAR: ${{ secrets.GSC_ANAHTAR }}
       - name: Sonuçları kaydet
+        if: steps.bugun.outputs.atla != '1'
         run: |
           git config user.name "site-paneli"
           git config user.email "site-paneli@users.noreply.github.com"
