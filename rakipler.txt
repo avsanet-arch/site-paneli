@@ -4,7 +4,7 @@
 # Büyük rezervasyon sitelerinde (etstur, neredekal vb.) hep belirli sayfa kullanın.
 
 # avsa.com
-https://neredekal.com/avsa-adasi-otelleri/ | avsa.com
+https://avsa.bandirma.com.tr | avsa.com
 https://neredekal.com/avsa-adasi-pansiyonlari/ | avsa.com
 https://www.etstur.com/Avsa-Adasi-Otelleri | avsa.com
 https://www.jollytur.com/marmara-avsa-otelleri | avsa.com
