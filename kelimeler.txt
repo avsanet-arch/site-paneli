@@ -4,5 +4,10 @@
 bodrum.gen.tr | bodrum nöbetçi eczane
 bodrum.gen.tr | bodrum dolmuş saatleri
 avsa.com | avşa otelleri
+avsa.com | avşa
+avsa.com | avşa adası
+avsa.com | avşa pansiyonları
+avsa.com | avşa otelleri
+avsa.com | avşa apartları
 avsa.com | avşa feribot saatleri
 izmir.gen.tr | izmir nöbetçi eczane
