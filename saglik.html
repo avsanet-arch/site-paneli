@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Sayfa sağlığı</title>
+<style>
+:root{--bg:#f6f7f9;--kart:#fff;--yazi:#1d2330;--soluk:#6b7280;--cizgi:#e5e7eb;--izgara:#eef0f3;--yesil:#16a34a;--kirmizi:#dc2626;--sari:#d97706;--mavi:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--kart:#181c24;--yazi:#e6e8ec;--soluk:#9aa1ad;--cizgi:#2a303b;--izgara:#232833;--yesil:#22c55e;--kirmizi:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--yazi);font:15px/1.5 system-ui,sans-serif;padding:24px 16px}
+.kap{max-width:1100px;margin:auto}h1{margin:0 0 4px;font-size:24px}h2{font-size:17px;margin:26px 0 10px}h3{font-size:15px;margin:0 0 8px}
+nav a{color:var(--mavi);font-size:14px;margin-right:14px}.soluk{color:var(--soluk);font-size:13px}
+.kart{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:14px 16px}
+.uyari{background:color-mix(in srgb,var(--sari) 14%,var(--kart));border:1px solid color-mix(in srgb,var(--sari) 40%,transparent);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:14px}
+.tablo{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--cizgi);white-space:nowrap}th{color:var(--soluk);font-weight:500;font-size:13px}
+td.s,th.s{text-align:right;font-variant-numeric:tabular-nums}tr:last-child td{border-bottom:0}td.k{white-space:normal;word-break:break-all;min-width:200px}
+td a{color:inherit}
+.ikili{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.sekme{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 6px}
+.sekme button{font:inherit;font-size:14px;border:1px solid var(--cizgi);background:var(--kart);color:var(--yazi);padding:6px 12px;border-radius:99px;cursor:pointer}
+.sekme button[aria-pressed=true]{background:var(--yazi);color:var(--kart);border-color:var(--yazi)}
+.buyuk{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.cubuk{height:10px;border-radius:99px;background:var(--izgara);overflow:hidden;margin:8px 0}.cubuk i{display:block;height:100%;background:var(--yesil)}
+.rozet{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
+.r-iyi{background:color-mix(in srgb,var(--yesil) 16%,transparent);color:var(--yesil)}
+.r-orta{background:color-mix(in srgb,var(--sari) 18%,transparent);color:var(--sari)}
+.r-kotu{background:color-mix(in srgb,var(--kirmizi) 16%,transparent);color:var(--kirmizi)}
+.r-yok{background:var(--izgara);color:var(--soluk)}
+details.bilgi{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:10px 16px;margin:14px 0;font-size:14px}
+details.bilgi summary{cursor:pointer;font-weight:600}details.bilgi li{margin:4px 0}
+.bos{padding:16px;text-align:center;color:var(--soluk)}
+</style></head><body><div class="kap">
+<nav><a href="index.html">← Sitelerim</a><a href="seo.html">SEO geçmişi</a><a href="rakipler.html">Rakip takibi</a></nav>
+<h1>Sayfa sağlığı</h1>
+<div class="soluk">Kaynak: Google Search Console (URL denetimi, site haritaları) ve Google PageSpeed Insights · Son güncelleme: 19.11.2026 00:50</div>
+<div id="uyarilar"></div>
+<details class="bilgi"><summary>Bu sayfa nasıl okunur?</summary><ul>
+<li><b>Dizinde</b>: Google bu sayfayı arama sonuçlarında gösterebiliyor. Dizinde olmayan sayfa Google'da hiç çıkmaz.</li>
+<li>Site haritasındaki sayfalar her gün parça parça (site başına 120 sayfa) Google'a sorulur, 14 günde bir yenilenir. Büyük sitelerde tamamının taranması birkaç gün sürer.</li>
+<li><b>"Tarandı ama dizine alınmadı"</b> ve <b>"Bulundu, henüz taranmadı"</b> en sık görülen sorunlardır: genelde içerik zayıf, kopyaya yakın ya da iç bağlantısı az demektir.</li>
+<li><b>"Başka sayfanın kopyası (normal)"</b>, <b>"Yönlendirme"</b> ve <b>noindex</b> çoğu zaman bilerek yapılmıştır; site haritasında olmamaları daha iyidir.</li>
+<li><b>Hız puanı</b> (telefon, 0–100): 90+ iyi, 50–89 geliştirilmeli, 50 altı yavaş. "Gerçek kullanıcı" satırı, Chrome kullanan ziyaretçilerin son 28 gündeki deneyimidir; varsa ona daha çok güvenin.</li>
+</ul></details>
+
+<h2>Tüm siteler</h2>
+<div class="kart tablo"><table id="genel"></table></div>
+
+<div class="sekme" id="siteSekme" role="group" aria-label="Site"></div>
+<div id="ayrinti"></div>
+</div>
+<script>
+const V = {"siteler":[{"site":"avsa.com","mulk":"https://www.avsa.com/","haritalar":[{"adres":"https://www.avsa.com/sitemap.xml","son_okuma":"2026-11-17","hata":0,"uyari":0,"bekliyor":false,"gonderilen":7095}],"harita_sayfa":746,"denetlenen":120,"dizinde":119,"sorunlu":[["https://www.avsa.com/oteller/kahvaltili","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"]],"ozet":[["Dizinde",119],["Bulundu, henüz taranmadı",1]],"gecmis":[["2026-11-18",[120,119]]],"hiz":[],"hiz_gecmis":[]},{"site":"bodrum.gen.tr","mulk":"https://bodrum.gen.tr/","haritalar":[{"adres":"https://bodrum.gen.tr/sitemap.xml","son_okuma":"2026-11-18","hata":0,"uyari":0,"bekliyor":false,"gonderilen":1938}],"harita_sayfa":1868,"denetlenen":0,"dizinde":0,"sorunlu":[],"ozet":[],"gecmis":[["2026-11-18",[0,0]]],"hiz":[],"hiz_gecmis":[]},{"site":"erdek.com","mulk":"sc-domain:erdek.com","haritalar":[{"adres":"https://www.erdek.com/sitemap.xml","son_okuma":"2026-11-16","hata":0,"uyari":0,"bekliyor":false,"gonderilen":344},{"adres":"http://www.erdek.com/sitemap.xml","son_okuma":"2019-06-25","hata":1,"uyari":0,"bekliyor":true,"gonderilen":0}],"harita_sayfa":175,"denetlenen":120,"dizinde":102,"sorunlu":[["https://www.erdek.com/erdek-baris-apart-pansiyon","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-05","2026-11-18"],["https://www.erdek.com/erdek-ali-oztoprak-motel","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-feribot-seferleri/erdek-badalan","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-motel","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-ocaklar-liva-orkinos-tatil-koyu","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-ocaklar-nergiz-otel","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-ocaklar-varhan-apart-pansiyon","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-ocaklar-vuran-apart","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-taksi-duraklari/erdek-taksi-duragi","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/konaklama","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.erdek.com/erdek-feribot-seferleri/erdek-marmara-adasi","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-feribot-seferleri/erdek-pasalimani","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-feribot-seferleri/erdek-tekirdag","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-ocaklar-onur-apart-otel","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-ocaklar-paril-otel","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-ruyam-motel","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-taksi-duraklari/erdek-deniz-taksi-efe","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.erdek.com/erdek-taksi-duraklari/garaj-taksi-duragi","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"]],"ozet":[["Dizinde",102],["Bulundu, henüz taranmadı",9],["Google bu sayfayı bilmiyor",8],["Tarandı ama dizine alınmadı",1]],"gecmis":[["2026-11-18",[120,102]]],"hiz":[],"hiz_gecmis":[]},{"site":"izmir.gen.tr","mulk":"sc-domain:izmir.gen.tr","haritalar":[{"adres":"https://www.izmir.gen.tr/sitemap.xml","son_okuma":"2026-11-17","hata":0,"uyari":0,"bekliyor":false,"gonderilen":5597}],"harita_sayfa":5689,"denetlenen":120,"dizinde":91,"sorunlu":[["https://www.izmir.gen.tr/aliaga-toplanma-alanlari","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-15","2026-11-18"],["https://www.izmir.gen.tr/menderes-akaryakit-fiyatlari","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-15","2026-11-18"],["https://www.izmir.gen.tr/bayrakli-akaryakit-fiyatlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/cesme-toplanma-alanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/cigli-toplanma-alanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/eglence-mekanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/foca-namaz-vakitleri","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/izmir-akaryakit-fiyatlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/izmir-namaz-vakitleri","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/izmir-semt-pazarlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/izmir-son-depremler","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/izmir-toplanma-alanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/karaburun-toplanma-alanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/kemalpasa-toplanma-alanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/kiraz-namaz-vakitleri","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/konak-semt-pazarlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/konak-toplanma-alanlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/menemen-semt-pazarlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/pansiyonlar","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/seferihisar-akaryakit-fiyatlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/torbali-akaryakit-fiyatlari","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://www.izmir.gen.tr/apartlar","Excluded by ‘noindex’ tag","Excluded by ‘noindex’ tag","2026-11-06","2026-11-18"],["https://www.izmir.gen.tr/butik-oteller","Excluded by ‘noindex’ tag","Excluded by ‘noindex’ tag","2026-11-06","2026-11-18"],["https://www.izmir.gen.tr/konaklama","Excluded by ‘noindex’ tag","Excluded by ‘noindex’ tag","2026-11-06","2026-11-18"],["https://www.izmir.gen.tr/oteller","Excluded by ‘noindex’ tag","Excluded by ‘noindex’ tag","2026-11-06","2026-11-18"],["https://www.izmir.gen.tr/restoranlar","Excluded by ‘noindex’ tag","Excluded by ‘noindex’ tag","2026-11-06","2026-11-18"],["https://www.izmir.gen.tr/kiraz-toplanma-alanlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.izmir.gen.tr/moteller","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://www.izmir.gen.tr/odemis-toplanma-alanlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"]],"ozet":[["Dizinde",91],["Bulundu, henüz taranmadı",19],["Excluded by ‘noindex’ tag",5],["Google bu sayfayı bilmiyor",3],["Tarandı ama dizine alınmadı",2]],"gecmis":[["2026-11-18",[120,91]]],"hiz":[],"hiz_gecmis":[]},{"site":"tatil.gen.tr","mulk":"sc-domain:tatil.gen.tr","haritalar":[{"adres":"https://tatil.gen.tr/sitemap.xml","son_okuma":"2026-11-17","hata":0,"uyari":0,"bekliyor":false,"gonderilen":13967}],"harita_sayfa":14037,"denetlenen":120,"dizinde":89,"sorunlu":[["https://tatil.gen.tr/isletmeler-icin","Blocked by robots.txt","robots.txt engelliyor","2026-11-10","2026-11-18"],["https://tatil.gen.tr/ankara","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-13","2026-11-18"],["https://tatil.gen.tr/antalya","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-18","2026-11-18"],["https://tatil.gen.tr/bursa","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/diyarbakir","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/gaziantep","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/konya","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-13","2026-11-18"],["https://tatil.gen.tr/mugla","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-18","2026-11-18"],["https://tatil.gen.tr/ordu","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/pansiyon-ve-butik-oteller","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-13","2026-11-18"],["https://tatil.gen.tr/sanliurfa","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/sirnak","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/usak","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-09","2026-11-18"],["https://tatil.gen.tr/villa-ve-tas-evler","Crawled - currently not indexed","Tarandı ama dizine alınmadı","2026-11-13","2026-11-18"],["https://tatil.gen.tr/tatil-rehberi/turkiye-antik-kentleri","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://tatil.gen.tr/tatil-rehberi/turkiye-kayak-merkezleri","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://tatil.gen.tr/tatil-rehberi/turkiyenin-en-guzel-golleri","Discovered - currently not indexed","Bulundu, henüz taranmadı","","2026-11-18"],["https://tatil.gen.tr/tesis-ekle","Duplicate without user-selected canonical","Kopya sayıldı (kanonik seçilmemiş)","2026-11-14","2026-11-18"],["https://tatil.gen.tr/adana-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/aladag-konaklama","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/aladag-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/ceyhan-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/cukurova-konaklama","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/cukurova-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/feke-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/imamoglu-konaklama","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/imamoglu-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/karaisali-konaklama","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/karaisali-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/karatas-yurtlari","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"],["https://tatil.gen.tr/kozan-konaklama","URL is unknown to Google","Google bu sayfayı bilmiyor","","2026-11-18"]],"ozet":[["Dizinde",89],["Tarandı ama dizine alınmadı",13],["Google bu sayfayı bilmiyor",13],["Bulundu, henüz taranmadı",3],["Kopya sayıldı (kanonik seçilmemiş)",1],["robots.txt engelliyor",1]],"gecmis":[["2026-11-18",[120,89]]],"hiz":[],"hiz_gecmis":[]}],"hatalar":["avsa.com hız ölçümü: HTTP Error 429: Too Many Requests","avsa.com hız ölçümü: HTTP Error 429: Too Many Requests","avsa.com hız ölçümü: HTTP Error 429: Too Many Requests","bodrum.gen.tr URL denetimi: HTTP Error 403: Forbidden","bodrum.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests","erdek.com hız ölçümü: HTTP Error 429: Too Many Requests","erdek.com hız ölçümü: HTTP Error 429: Too Many Requests","erdek.com hız ölçümü: HTTP Error 429: Too Many Requests","izmir.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests","izmir.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests","izmir.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests","tatil.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests","tatil.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests","tatil.gen.tr hız ölçümü: HTTP Error 429: Too Many Requests"],"ornek":false};
+const $ = s => document.querySelector(s);
+const sayi = n => n == null ? "–" : Math.round(n).toLocaleString("tr-TR");
+const kacis = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const sn = ms => ms == null ? "–" : (ms / 1000).toLocaleString("tr-TR", {maximumFractionDigits: 1}) + " sn";
+const tarih = t => t ? new Date(t).toLocaleDateString("tr-TR") : "–";
+let secili = 0;
+
+function puanRozet(p) {
+  if (p == null) return '<span class="rozet r-yok">ölçülemedi</span>';
+  const [s, ad] = p >= 90 ? ["r-iyi", "iyi"] : p >= 50 ? ["r-orta", "geliştirilmeli"] : ["r-kotu", "yavaş"];
+  return `<span class="rozet ${s}">${p} · ${ad}</span>`;
+}
+function gercekRozet(g) {
+  if (!g || !g.genel) return '<span class="rozet r-yok">veri yok</span>';
+  const t = {FAST: ["r-iyi", "hızlı"], AVERAGE: ["r-orta", "orta"], SLOW: ["r-kotu", "yavaş"]}[g.genel] || ["r-yok", g.genel];
+  return `<span class="rozet ${t[0]}">${t[1]}</span>`;
+}
+const yuzde = s => s.denetlenen ? Math.round(100 * s.dizinde / s.denetlenen) : null;
+
+function genel() {
+  let h = '<tr><th>Site</th><th class="s">Denetlenen sayfa</th><th class="s">Dizinde</th><th class="s">Dizinde değil</th><th class="s">Harita hatası</th><th>Telefon hız puanı</th></tr>';
+  V.siteler.forEach((s, i) => {
+    const hata = (s.haritalar || []).reduce((t, x) => t + x.hata, 0);
+    const y = yuzde(s);
+    h += `<tr style="cursor:pointer" data-i="${i}"><td><b>${kacis(s.site)}</b></td>
+      <td class="s">${sayi(s.denetlenen)}${s.harita_sayfa ? ` <span class="soluk">/ ${sayi(s.harita_sayfa)}</span>` : ""}</td>
+      <td class="s">${y == null ? "–" : "%" + y}</td>
+      <td class="s">${s.denetlenen ? `<span class="${s.denetlenen - s.dizinde ? "" : "soluk"}">${sayi(s.denetlenen - s.dizinde)}</span>` : "–"}</td>
+      <td class="s">${hata ? `<span class="rozet r-kotu">${hata}</span>` : '<span class="soluk">0</span>'}</td>
+      <td>${puanRozet(s.hiz && s.hiz[0] ? s.hiz[0].puan : null)}</td></tr>`;
+  });
+  $("#genel").innerHTML = h;
+  $("#genel").querySelectorAll("tr[data-i]").forEach(tr => tr.onclick = () => { secili = +tr.dataset.i; ciz(); });
+}
+
+function ayrinti(s) {
+  const y = yuzde(s);
+  let h = `<div class="ikili"><div class="kart"><h3>Google dizini</h3>
+    <div class="buyuk">${y == null ? "–" : "%" + y}</div>
+    <div class="soluk">Denetlenen ${sayi(s.denetlenen)} sayfanın ${sayi(s.dizinde)} tanesi Google'da${s.harita_sayfa && s.harita_sayfa > s.denetlenen ? ` · site haritasında ${sayi(s.harita_sayfa)} sayfa var, kalanlar önümüzdeki günlerde denetlenecek` : ""}</div>
+    <div class="cubuk"><i style="width:${y || 0}%"></i></div>
+    <table>${(s.ozet || []).map(([ad, n]) => `<tr><td>${kacis(ad)}</td><td class="s">${sayi(n)}</td></tr>`).join("")}</table></div>`;
+  h += `<div class="kart tablo"><h3>Site haritaları</h3><table><tr><th>Harita</th><th class="s">Sayfa</th><th class="s">Hata</th><th class="s">Uyarı</th><th>Google son okuma</th></tr>`;
+  if (!(s.haritalar || []).length) h += '<tr><td colspan="5" class="bos">Search Console\'a gönderilmiş site haritası yok.</td></tr>';
+  for (const m of s.haritalar || [])
+    h += `<tr><td class="k">${kacis(m.adres.replace(/^https?:\/\/(www\.)?[^/]+/, ""))}</td><td class="s">${sayi(m.gonderilen)}</td>
+      <td class="s">${m.hata ? `<span class="rozet r-kotu">${m.hata}</span>` : "0"}</td><td class="s">${m.uyari ? `<span class="rozet r-orta">${m.uyari}</span>` : "0"}</td>
+      <td>${m.bekliyor ? "bekliyor" : tarih(m.son_okuma)}</td></tr>`;
+  h += "</table></div></div>";
+
+  h += `<h2>Telefon hızı</h2><div class="kart tablo"><table><tr><th>Sayfa</th><th>Puan</th><th class="s">Ana içerik yüklenmesi</th><th class="s">Kayma (CLS)</th><th class="s">Engelleme süresi</th><th>Gerçek kullanıcı</th></tr>`;
+  if (!(s.hiz || []).length) h += '<tr><td colspan="6" class="bos">Ölçüm yapılamadı.</td></tr>';
+  for (const z of s.hiz || []) {
+    const g = z.gercek;
+    h += `<tr><td class="k"><a href="${kacis(z.adres)}" target="_blank" rel="noopener">${kacis(z.adres.replace(/^https?:\/\/(www\.)?[^/]+/, "") || "/")}</a></td>
+      <td>${puanRozet(z.puan)}</td><td class="s">${sn(z.lcp)}</td><td class="s">${z.cls == null ? "–" : z.cls.toFixed(2)}</td><td class="s">${z.tbt == null ? "–" : sayi(z.tbt) + " ms"}</td>
+      <td>${gercekRozet(g)}${g && g.lcp ? ` <span class="soluk">yüklenme ${sn(g.lcp)}${g.inp ? ` · tepki ${g.inp} ms` : ""}</span>` : ""}</td></tr>`;
+  }
+  h += "</table></div>";
+  if ((s.hiz_gecmis || []).length > 1)
+    h += `<p class="soluk">Ana sayfa puanı son günlerde: ${s.hiz_gecmis.slice(-10).map(([t, p]) => `${tarih(t).slice(0, 5)}: ${p}`).join(" · ")}</p>`;
+
+  h += `<h2>Dizinde olmayan sayfalar <span class="soluk">(${sayi((s.sorunlu || []).length)})</span></h2><div class="kart tablo"><table>
+    <tr><th>Sayfa</th><th>Durum</th><th>Google son tarama</th><th>Kontrol</th></tr>`;
+  if (!(s.sorunlu || []).length) h += '<tr><td colspan="4" class="bos">Denetlenen sayfaların hepsi dizinde.</td></tr>';
+  for (const [u, , durum, tarama, kontrol] of (s.sorunlu || []).slice(0, 300))
+    h += `<tr><td class="k"><a href="${kacis(u)}" target="_blank" rel="noopener">${kacis(u.replace(/^https?:\/\/(www\.)?[^/]+/, "") || "/")}</a></td>
+      <td>${kacis(durum)}</td><td>${tarih(tarama)}</td><td class="soluk">${tarih(kontrol)}</td></tr>`;
+  h += "</table></div>";
+  $("#ayrinti").innerHTML = h;
+}
+
+function ciz() {
+  let u = V.ornek ? '<div class="uyari"><b>Bu bir örnek.</b> Rakamlar uydurmadır.</div>' : "";
+  for (const e of V.hatalar || []) u += `<div class="uyari">${kacis(e)}</div>`;
+  $("#uyarilar").innerHTML = u;
+  if (!V.siteler.length) return;
+  genel();
+  $("#siteSekme").innerHTML = V.siteler.map((s, i) => `<button type="button" data-i="${i}" aria-pressed="${i === secili}">${kacis(s.site)}</button>`).join("");
+  $("#siteSekme").querySelectorAll("button").forEach(b => b.onclick = () => { secili = +b.dataset.i; ciz(); });
+  ayrinti(V.siteler[secili]);
+}
+ciz();
+</script>
+</body></html>
