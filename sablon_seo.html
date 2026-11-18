@@ -29,6 +29,7 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 .dagilim .kart b{font-size:22px;font-variant-numeric:tabular-nums}
 .etiket{font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
 .e-yeni{background:color-mix(in srgb,var(--yesil) 16%,transparent);color:var(--yesil)}
+th.siralanir{cursor:pointer;user-select:none}th.siralanir:hover{color:var(--yazi)}
 .e-kayip{background:var(--izgara);color:var(--soluk);cursor:help}
 .sonGoruldu{display:block;font-size:12px;color:var(--soluk);font-weight:400}
 .e-izle{background:color-mix(in srgb,var(--mavi) 16%,transparent);color:var(--mavi)}
@@ -49,7 +50,7 @@ tr.detay td{background:var(--izgara);white-space:normal}
 .motor h3{margin:0 0 4px;font-size:15px}.motor.kapali{opacity:.7}
 td.sira-iyi{color:var(--yesil);font-weight:700}td.sira-orta{color:var(--sari);font-weight:600}
 </style></head><body><div class="kap">
-<nav><a href="index.html">← Sitelerim</a><a href="rakipler.html">Rakip takibi</a></nav>
+<nav><a href="index.html">← Sitelerim</a><a href="rakipler.html">Rakip takibi</a><a href="saglik.html">Sayfa sağlığı</a></nav>
 <h1>SEO geçmişi</h1>
 <div class="soluk">Kaynak: Google Search Console, Bing Webmaster Tools, Yandex Webmaster · Son güncelleme: {{ZAMAN}} · Google verisi 2–3 gün geriden gelir</div>
 <div id="uyarilar"></div>
@@ -127,7 +128,7 @@ const sayi = n => n == null ? "–" : Math.round(n).toLocaleString("tr-TR");
 const ondalik = n => n == null ? "–" : n.toLocaleString("tr-TR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
 const yuzde = n => n == null ? "–" : "%" + n.toLocaleString("tr-TR", {maximumFractionDigits: 1});
 const kacis = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
-let durum = {site: 0, karsi: 1, metrik: "tik", tur: "kelimeler", suzgec: "tumu", ara: "", goster: 100, msuzgec: "ihtiyac", mara: "", mgoster: 100};
+let durum = {sirala: null, site: 0, karsi: 1, metrik: "tik", tur: "kelimeler", suzgec: "tumu", ara: "", goster: 100, msuzgec: "ihtiyac", mara: "", mgoster: 100};
 
 function degisim(simdi, eski, ters) {
   // ters: sıra için (küçük = iyi)
@@ -423,6 +424,23 @@ function suz(s) {
     }
   });
   const anahtar = r => r.simdi ? r.simdi[2] : (r.eski ? r.eski[2] / 1e6 : 0);  // kaybolanlar sona
+  if (durum.sirala) {
+    // başlığa tıklanınca: o sütuna göre; değeri olmayanlar her zaman sonda
+    const deger = {
+      ad: r => r.ad, eski: r => r.eski && r.eski[0], simdi: r => r.simdi && r.simdi[0],
+      degisim: r => r.simdi && r.eski ? r.eski[0] - r.simdi[0] : null,
+      tik: r => r.simdi ? r.simdi[1] : null, gos: r => r.simdi ? r.simdi[2] : null,
+    }[durum.sirala.sutun];
+    const yon = durum.sirala.yon;
+    satir.sort((a, b) => {
+      const x = deger(a), y = deger(b);
+      if (x == null && y == null) return anahtar(b) - anahtar(a);
+      if (x == null) return 1;
+      if (y == null) return -1;
+      return (typeof x === "string" ? x.localeCompare(y, "tr") : x - y) * yon;
+    });
+    return satir;
+  }
   if (durum.suzgec === "yukselen") satir.sort((a, b) => (b.eski[0] - b.simdi[0]) - (a.eski[0] - a.simdi[0]));
   else if (durum.suzgec === "dusen") satir.sort((a, b) => (a.eski[0] - a.simdi[0]) - (b.eski[0] - b.simdi[0]));
   else satir.sort((a, b) => anahtar(b) - anahtar(a));
@@ -460,8 +478,12 @@ function sonGoruldugu(s, k) {
 function liste(s) {
   const kayit = s[durum.tur], izlenen = new Set(s.izlenen || []), satir = suz(s);
   const donem = s.donemler[durum.karsi].ad;
-  let h = `<tr><th>${durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa"}</th><th class="s">Sıra (${kacis(donem)})</th><th class="s">Sıra (şimdi)</th>
-    <th class="s">Değişim</th><th class="s">Tıklama (önce → şimdi)</th><th class="s">Gösterim (şimdi)</th></tr>`;
+  const bas = (sutun, ad, sinif) => {
+    const ok = durum.sirala && durum.sirala.sutun === sutun ? (durum.sirala.yon > 0 ? " ▲" : " ▼") : "";
+    return `<th class="${sinif || ""} siralanir" data-sutun="${sutun}" aria-sort="${ok ? (durum.sirala.yon > 0 ? "ascending" : "descending") : "none"}" title="Sıralamak için tıklayın">${ad}${ok}</th>`;
+  };
+  let h = `<tr>${bas("ad", durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa")}${bas("eski", `Sıra (${kacis(donem)})`, "s")}${bas("simdi", "Sıra (şimdi)", "s")}
+    ${bas("degisim", "Değişim", "s")}${bas("tik", "Tıklama (önce → şimdi)", "s")}${bas("gos", "Gösterim (şimdi)", "s")}</tr>`;
   if (!satir.length) h += '<tr><td colspan="6" class="bos">Bu süzgeçte kayıt yok.</td></tr>';
   for (const r of satir.slice(0, durum.goster)) {
     let ad = durum.tur === "sayfalar"
@@ -482,6 +504,11 @@ function liste(s) {
       <td class="s">${r.eski ? sayi(r.eski[1]) : "–"} → ${r.simdi ? sayi(r.simdi[1]) : "–"}</td><td class="s">${r.simdi ? sayi(r.simdi[2]) : "–"}</td></tr>`;
   }
   $("#liste").innerHTML = h;
+  $("#liste").querySelectorAll("th.siralanir").forEach(th => th.onclick = () => {
+    const sutun = th.dataset.sutun, ilk = {ad: 1, eski: 1, simdi: 1, degisim: -1, tik: -1, gos: -1}[sutun];
+    durum.sirala = durum.sirala && durum.sirala.sutun === sutun ? {sutun, yon: -durum.sirala.yon} : {sutun, yon: ilk};
+    durum.goster = 100; liste(V.siteler[durum.site]);
+  });
   $("#liste").querySelectorAll("tr.acilir").forEach(tr => tr.onclick = ev => {
     if (ev.target.closest("a")) return;
     const sonraki = tr.nextElementSibling;

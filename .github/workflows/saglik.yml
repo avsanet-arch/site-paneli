@@ -1,0 +1,48 @@
+name: Sayfa sağlığı ve uyarılar
+on:
+  schedule:
+    - cron: "27 6 * * *"   # SEO güncellemesinden sonra (09:27 Türkiye)
+    - cron: "57 8 * * *"   # GitHub atlarsa yedek
+    - cron: "7 12 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+concurrency: kayit-saglik
+jobs:
+  saglik:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+      - name: Bugün zaten çalıştı mı?
+        id: bugun
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && git log --format=%s | grep -q "^Sağlık: $(date -u +%Y-%m-%d)"; then
+            echo "atla=1" >> "$GITHUB_OUTPUT"; echo "Bugün zaten güncellendi, atlanıyor."
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.bugun.outputs.atla != '1'
+        with:
+          python-version: "3.12"
+      - run: pip install google-auth requests
+        if: steps.bugun.outputs.atla != '1'
+      - run: python saglik.py
+        if: steps.bugun.outputs.atla != '1'
+        env:
+          GSC_ANAHTAR: ${{ secrets.GSC_ANAHTAR }}
+          PSI_ANAHTAR: ${{ secrets.PSI_ANAHTAR }}
+      - run: python uyari.py
+        if: steps.bugun.outputs.atla != '1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Sonuçları kaydet
+        if: steps.bugun.outputs.atla != '1'
+        run: |
+          git config user.name "site-paneli"
+          git config user.email "site-paneli@users.noreply.github.com"
+          git add saglik.html saglik.json saglik_durum.json
+          if [ -f uyari_durum.json ]; then git add uyari_durum.json; fi
+          git commit -m "Sağlık: $(date -u +%Y-%m-%d)" || echo "değişiklik yok"
+          git pull --rebase && git push

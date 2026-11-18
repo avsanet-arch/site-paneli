@@ -24,8 +24,8 @@ ARSIV_SAYFA = 2000    # her ay saklanan en fazla sayfa
 DONEM_KELIME = 25000  # son 28 gün / önceki 28 gün / geçen yıl için okunan en fazla kelime
 DONEM_SAYFA = 5000    # (eskiden 1000'di: az aranan marka kelimeleri listeye girmiyor, yanlışlıkla "kayboldu" görünüyordu)
 ARSIV_SURUM = 2       # arşivdeki aylar bu sürümden eskiyse yeniden okunur
-SAYFADA_KELIME = 400  # sayfada gösterilen en fazla kelime (izlenenler hariç)
-SAYFADA_SAYFA = 150
+SAYFADA_KELIME = 1500 # sayfada gösterilen en fazla kelime (izlenenler ve tıklama alanlar hariç)
+SAYFADA_SAYFA = 400
 GECIKME = 3           # Search Console verisi 2-3 gün geriden gelir
 AY_ADLARI = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
              "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
@@ -294,6 +294,7 @@ def site_verisi(g, site, arsiv, izlenen):
         simdi, once = donemler[0][tur], donemler[1][tur]
         secim = sorted(simdi, key=lambda k: -simdi[k][2])[:adet]
         secim += [k for k in sorted(once, key=lambda k: -once[k][2])[:adet // 3] if k not in simdi]
+        secim += [k for k, v in list(simdi.items()) + list(once.items()) if v[1] > 0]   # tıklama alan her kelime
         if tur == "kelimeler":
             secim += [k for k in izlenen_liste if k not in secim]
         return [[k] + [d[tur].get(k) for d in donemler] for k in dict.fromkeys(secim)]
