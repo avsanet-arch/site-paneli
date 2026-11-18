@@ -123,3 +123,8 @@ GitHub'da **Actions > "Kelime incele" > Run workflow**: siteyi ve kelimeyi yazı
 Not: Search Console'daki "ortalama sıra" her gösterimin ortalamasıdır. Masaüstü, başka ülkeler ya da sitenizin alt sıralardaki
 başka sayfaları karışınca ortalama büyür; tıklamalar artıyorsa gerçek bir düşüş yoktur. Panel bu durumda "TIKLAMA ARTTI" yazar,
 uyarı e-postası da yalnız sıra VE tıklama birlikte düştüğünde gelir.
+
+Kelime ve sayfa sıraları yalnızca **Türkiye'deki** aramalardan hesaplanır (`seo.py` içinde `ULKE`). Bir dönemde 50'den az
+gösterimi olan kelimede (`AZ_GOSTERIM`) değişim hesaplanmaz, "az veri" yazar; bu kelimeler "Düşenler/Yükselenler" listesine ve
+uyarılara girmez. Kelimeye tıklayınca son 28 günün telefon ve bilgisayar sırası ayrı görünür. Az aranan bir kelimenin gerçek
+sırası için Google'da kendiniz arayın (gizli pencerede, oturum kapalıyken).

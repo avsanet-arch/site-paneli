@@ -23,7 +23,9 @@ ARSIV_KELIME = 5000   # her ay saklanan en fazla kelime
 ARSIV_SAYFA = 2000    # her ay saklanan en fazla sayfa
 DONEM_KELIME = 25000  # son 28 gün / önceki 28 gün / geçen yıl için okunan en fazla kelime
 DONEM_SAYFA = 5000    # (eskiden 1000'di: az aranan marka kelimeleri listeye girmiyor, yanlışlıkla "kayboldu" görünüyordu)
-ARSIV_SURUM = 2       # arşivdeki aylar bu sürümden eskiyse yeniden okunur
+ARSIV_SURUM = 3       # arşivdeki aylar bu sürümden eskiyse yeniden okunur (3: kelime/sayfa sıraları yalnız Türkiye)
+ULKE = "tur"          # kelime ve sayfa sıraları yalnız bu ülkedeki aramalardan (yurt dışı aramalar ortalamayı bozuyordu)
+AZ_GOSTERIM = 50      # bundan az gösterimi olan kelimenin ortalama sırası güvenilmez (değişim hesaplanmaz)
 SAYFADA_KELIME = 1500 # sayfada gösterilen en fazla kelime (izlenenler ve tıklama alanlar hariç)
 SAYFADA_SAYFA = 400
 GECIKME = 3           # Search Console verisi 2-3 gün geriden gelir
@@ -73,12 +75,16 @@ class Google:
         out = self._cagir("/sites").get("siteEntry", [])
         return [s["siteUrl"] for s in out if s.get("permissionLevel") != "siteUnverifiedUser"]
 
-    def sorgu(self, site, bas, bit, boyut, limit=1000, regex=None):
-        govde = {"startDate": bas.isoformat(), "endDate": bit.isoformat(),
-                 "dimensions": [boyut] if boyut else [], "type": "web"}
+    def sorgu(self, site, bas, bit, boyut, limit=1000, regex=None, ulke=None):
+        boyutlar = boyut if isinstance(boyut, list) else ([boyut] if boyut else [])
+        govde = {"startDate": bas.isoformat(), "endDate": bit.isoformat(), "dimensions": boyutlar, "type": "web"}
+        suzgec = []
         if regex:
-            govde["dimensionFilterGroups"] = [{"filters": [
-                {"dimension": "query", "operator": "includingRegex", "expression": regex}]}]
+            suzgec.append({"dimension": "query", "operator": "includingRegex", "expression": regex})
+        if ulke:
+            suzgec.append({"dimension": "country", "operator": "equals", "expression": ulke})
+        if suzgec:
+            govde["dimensionFilterGroups"] = [{"filters": suzgec}]
         satirlar = []
         while len(satirlar) < limit:                # API tek seferde en çok 25000 satır verir
             parca = min(25000, limit - len(satirlar))
@@ -130,7 +136,14 @@ class Ornek:
         tik = gos * max(0.002, 0.32 / sira)
         return sira, tik, gos
 
-    def sorgu(self, site, bas, bit, boyut, limit=1000, regex=None):
+    def sorgu(self, site, bas, bit, boyut, limit=1000, regex=None, ulke=None):
+        if isinstance(boyut, list):                 # [kelime, cihaz]: telefon biraz daha iyi, bilgisayar biraz daha kötü
+            out = []
+            for r_ in self.sorgu(site, bas, bit, boyut[0], limit, regex, ulke):
+                for cihaz, pay, fark in (("MOBILE", .7, -1.2), ("DESKTOP", .3, 2.5)):
+                    out.append({"keys": r_["keys"] + [cihaz], "clicks": round(r_["clicks"] * pay),
+                                "impressions": round(r_["impressions"] * pay), "position": max(1, r_["position"] + fark)})
+            return out
         gunler = [bas + timedelta(d) for d in range((bit - bas).days + 1)]
         if boyut == "date":
             out = []
@@ -232,27 +245,27 @@ def site_verisi(g, site, arsiv, izlenen):
             a["aylar"][anahtar] = {
                 "toplam": [round(sum(r["position"] * r["impressions"] for r in satir) / gos, 1) if gos else None,
                            int(sum(r["clicks"] for r in satir)), int(gos)],
-                "kelimeler": tablo(g.sorgu(site, bas, bit, "query", ARSIV_KELIME)),
-                "sayfalar": tablo(g.sorgu(site, bas, bit, "page", ARSIV_SAYFA)),
+                "kelimeler": tablo(g.sorgu(site, bas, bit, "query", ARSIV_KELIME, ulke=ULKE)),
+                "sayfalar": tablo(g.sorgu(site, bas, bit, "page", ARSIV_SAYFA, ulke=ULKE)),
                 "surum": ARSIV_SURUM,
             }
             if izlenen:
-                a["aylar"][anahtar]["kelimeler"].update(tablo(g.sorgu(site, bas, bit, "query", 500, izlenen)))
+                a["aylar"][anahtar]["kelimeler"].update(tablo(g.sorgu(site, bas, bit, "query", 500, izlenen, ULKE)))
         ay = (ay + timedelta(32)).replace(day=1)
 
     # 3) Karşılaştırılacak dönemler: son 28 gün, önceki 28 gün, geçen yıl aynı 28 gün + arşivdeki aylar
     donemler = []
     def ekle(kod, etiket, bas, bit):
-        k = tablo(g.sorgu(site, bas, bit, "query", DONEM_KELIME))
+        k = tablo(g.sorgu(site, bas, bit, "query", DONEM_KELIME, ulke=ULKE))
         if izlenen:
-            k.update(tablo(g.sorgu(site, bas, bit, "query", 500, izlenen)))
+            k.update(tablo(g.sorgu(site, bas, bit, "query", 500, izlenen, ULKE)))
         satir = [r for d, r in gunler.items() if bas.isoformat() <= d <= bit.isoformat()]
         gos = sum(r["impressions"] for r in satir)
         toplam = [round(sum(r["position"] * r["impressions"] for r in satir) / gos, 1) if gos else None,
                   int(sum(r["clicks"] for r in satir)), int(gos)]
         donemler.append({"kod": kod, "ad": etiket, "aralik": f"{bas:%d.%m.%Y} – {bit:%d.%m.%Y}", "gun": (bit - bas).days + 1,
                          "toplam": toplam, "kelimeler": k,
-                         "sayfalar": tablo(g.sorgu(site, bas, bit, "page", DONEM_SAYFA))})
+                         "sayfalar": tablo(g.sorgu(site, bas, bit, "page", DONEM_SAYFA, ulke=ULKE))})
     ekle("simdi", "Son 28 gün", son - timedelta(27), son)
     ekle("once", "Önceki 28 gün", son - timedelta(55), son - timedelta(28))
     if son - timedelta(27 + 364) >= ilk:
@@ -299,11 +312,20 @@ def site_verisi(g, site, arsiv, izlenen):
             secim += [k for k in izlenen_liste if k not in secim]
         return [[k] + [d[tur].get(k) for d in donemler] for k in dict.fromkeys(secim)]
     izlenen_liste = izlenen_kelimeler().get(ad(site), [])
+    kelime_listesi = liste("kelimeler", SAYFADA_KELIME)
+
+    # Kelimelerin telefon / bilgisayar sırası (son 28 gün, Türkiye): {kelime: {"m": [sıra, gös], "d": [sıra, gös]}}
+    gosterilen = {k[0] for k in kelime_listesi}
+    cihazlar = {}
+    for r_ in g.sorgu(site, son - timedelta(27), son, ["query", "device"], DONEM_KELIME * 2, ulke=ULKE):
+        k, c = r_["keys"]
+        if k in gosterilen and c in ("MOBILE", "DESKTOP"):
+            cihazlar.setdefault(k, {})["m" if c == "MOBILE" else "d"] = [round(r_["position"], 1), int(r_["impressions"])]
 
     return {
         "site": ad(site), "mulk": site, "seri": seri, "seri_tur": seri_tur, "son_veri": son.isoformat(),
         "donemler": [{k: d[k] for k in ("kod", "ad", "aralik", "gun", "toplam")} for d in donemler],
-        "kelimeler": liste("kelimeler", SAYFADA_KELIME),
+        "kelimeler": kelime_listesi, "kelime_cihaz": cihazlar, "sira_ulke": ULKE, "az_gosterim": AZ_GOSTERIM,
         "sayfalar": liste("sayfalar", SAYFADA_SAYFA),
         "izlenen": izlenen_liste, "cihaz": cihaz, "ulke": ulke,
     }

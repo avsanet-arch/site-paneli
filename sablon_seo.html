@@ -101,6 +101,7 @@ td.sira-iyi{color:var(--yesil);font-weight:700}td.sira-orta{color:var(--sari);fo
   <button class="dugme" id="csvIndir" title="Şu an görünen listenin tamamını Excel'de açılan CSV olarak indirir">⬇ Bu listeyi CSV indir</button>
   <a class="dugme" href="firsatlar.csv" download style="text-decoration:none" title="Bütün sitelerin fırsat kelimeleri ve sayfaları (her gün güncellenir)">⬇ Tüm sitelerin fırsatları (CSV)</a>
 </div>
+<p class="soluk" id="listeNot" style="margin:4px 0 8px;font-size:13px">Sıralar yalnızca Türkiye'deki Google aramalarından hesaplanır. Search Console'un verdiği sayı, kelimenin aratıldığı her seferin <b>ortalamasıdır</b>; az aranan kelimede birkaç arama bile ortalamayı çok oynatır. Bu yüzden değişim, iki dönemde de en az 50 gösterimi olan kelimelerde hesaplanır. Diğerlerinde "az veri" yazar. Bir kelimeye tıklayınca telefon ve bilgisayar sırası ayrı ayrı görünür.</p>
 <div class="kart tablo"><table id="liste"></table></div>
 <div style="text-align:center;margin:12px"><button class="dugme" id="dahaFazla" hidden>Daha fazla göster</button></div>
 <h2 id="motorlar">Google, Bing ve Yandex: nerede güçlüyüz, nerede ihtiyaç var? <span class="soluk">(son 28 gün)</span></h2>
@@ -142,6 +143,8 @@ function degisim(simdi, eski, ters) {
   if (Math.abs(f) < 0.5) return '<span class="notr">aynı</span>';
   return `<span class="${f > 0 ? "iyi" : "kotu"}">${f > 0 ? "▲" : "▼"} ${yuzde(Math.abs(f))}</span>`;
 }
+// Ortalama sıra az gösterimde güvenilmez: değişim yalnızca iki dönemde de yeterli gösterim varsa hesaplanır
+function guvenilir(r) { const az = V.siteler[durum.site].az_gosterim || 50; return r.simdi && r.eski && r.simdi[2] >= az && r.eski[2] >= az; }
 function ilkOn(s, i) { return s.kelimeler.filter(k => k[i + 1] && k[i + 1][0] <= 10).length; }
 
 function uyarilar() {
@@ -408,7 +411,10 @@ function gecmis(s, kayit) {
   } else svg = '<div class="soluk">Ay ay geçmiş için yeterli veri yok.</div>';
   const t = '<table><tr><th>Ay</th><th class="s">Sıra</th><th class="s">Tıklama</th><th class="s">Gösterim</th></tr>' +
     aylar.slice().reverse().map(([d, v]) => `<tr><td>${d.ad}</td><td class="s">${v ? ondalik(v[0]) : "–"}</td><td class="s">${v ? sayi(v[1]) : "–"}</td><td class="s">${v ? sayi(v[2]) : "–"}</td></tr>`).join("") + "</table>";
-  return `<div class="mini"><div style="flex:1;min-width:260px"><b>Aylara göre sıra</b> <span class="soluk">(yukarı = daha iyi)</span>${svg}</div><div class="tablo" style="max-height:240px;overflow:auto">${t}</div></div>`;
+  const c = durum.tur === "kelimeler" && (s.kelime_cihaz || {})[kayit[0]];
+  const cs = (ad, v) => v ? `<span style="margin-right:18px">${ad}: <b>${ondalik(v[0])}</b>. sıra <span class="soluk">(${sayi(v[1])} gösterim${v[1] < (s.az_gosterim || 50) ? ", az veri" : ""})</span></span>` : "";
+  const cihazSat = c ? `<div style="width:100%;margin-bottom:8px"><b>Son 28 gün, Türkiye:</b> ${cs("📱 Telefon", c.m)}${cs("💻 Bilgisayar", c.d)}</div>` : "";
+  return `<div class="mini">${cihazSat}<div style="flex:1;min-width:260px"><b>Aylara göre sıra</b> <span class="soluk">(yukarı = daha iyi)</span>${svg}</div><div class="tablo" style="max-height:240px;overflow:auto">${t}</div></div>`;
 }
 
 function suz(s) {
@@ -416,7 +422,7 @@ function suz(s) {
   const ara = durum.ara.toLocaleLowerCase("tr");
   let satir = kayit.map(k => ({ad: k[0], simdi: k[1], eski: k[j], k})).filter(r => {
     if (ara && !r.ad.toLocaleLowerCase("tr").includes(ara)) return false;
-    const fark = r.simdi && r.eski ? r.eski[0] - r.simdi[0] : 0;
+    const fark = guvenilir(r) ? r.eski[0] - r.simdi[0] : 0;
     switch (durum.suzgec) {
       case "yukselen": return fark >= 1;
       case "dusen": return fark <= -1;
@@ -432,7 +438,7 @@ function suz(s) {
     // başlığa tıklanınca: o sütuna göre; değeri olmayanlar her zaman sonda
     const deger = {
       ad: r => r.ad, eski: r => r.eski && r.eski[0], simdi: r => r.simdi && r.simdi[0],
-      degisim: r => r.simdi && r.eski ? r.eski[0] - r.simdi[0] : null,
+      degisim: r => guvenilir(r) ? r.eski[0] - r.simdi[0] : null,   // az veride değişim sayılmaz, sona gider
       tik: r => r.simdi ? r.simdi[1] : null, gos: r => r.simdi ? r.simdi[2] : null,
     }[durum.sirala.sutun];
     const yon = durum.sirala.yon;
@@ -459,7 +465,7 @@ function csvIndir() {
   const satirlar = [["Site", durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa", `Sıra (${donem})`, "Sıra (son 28 gün)",
     "Değişim (+ = yükseldi)", `Tıklama (${donem})`, "Tıklama (son 28 gün)", "Gösterim (son 28 gün)", "Tıklama oranı %", "Fırsat"]];
   for (const r of satir) satirlar.push([s.site, r.ad, r.eski ? d(r.eski[0]) : "", r.simdi ? d(r.simdi[0]) : "",
-    r.simdi && r.eski ? d(r.eski[0] - r.simdi[0]) : (r.simdi ? "yeni" : "bu dönem veri yok"), r.eski ? r.eski[1] : "", r.simdi ? r.simdi[1] : "",
+    guvenilir(r) ? d(r.eski[0] - r.simdi[0]) : (r.simdi && r.eski ? "az veri" : (r.simdi ? "yeni" : "bu dönem veri yok")), r.eski ? r.eski[1] : "", r.simdi ? r.simdi[1] : "",
     r.simdi ? r.simdi[2] : "", r.simdi && r.simdi[2] ? d(100 * r.simdi[1] / r.simdi[2]) : "",
     r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20 ? "evet" : ""]);
   const metin = "\ufeff" + satirlar.map(r => r.map(h).join(";")).join("\r\n");
@@ -503,12 +509,12 @@ function liste(s) {
     if (izlenen.has(r.ad)) ad += '<span class="etiket e-izle">İZLENEN</span>';
     if (r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20) ad += '<span class="etiket e-firsat">FIRSAT</span>';
     // Sıra kötüleşmiş görünüyor ama tıklama artmış: ortalama sıra yanıltıyor (ör. masaüstü / başka ülke / derin sayfalar karışıyor)
-    if (r.simdi && r.eski && r.simdi[0] - r.eski[0] > 1 && r.simdi[1] > r.eski[1])
+    if (guvenilir(r) && r.simdi[0] - r.eski[0] > 1 && r.simdi[1] > r.eski[1])
       ad += '<span class="etiket e-kayip" title="Ortalama sıra kötüleşmiş görünüyor ama tıklamalar ARTMIŞ. Google ortalama sırayı her gösterimin ortalamasıyla hesaplar; masaüstü, başka ülke ya da sitenizin alt sıralardaki başka sayfaları karışınca ortalama büyür. Bu durumda gerçek bir düşüş yoktur.">TIKLAMA ARTTI</span>';
-    const azVeri = r.simdi && r.simdi[2] < 50;
+    const azVeri = r.simdi && r.simdi[2] < (s.az_gosterim || 50);
     const sira = kayit.indexOf(r.k);
-    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"${azVeri ? ' title="Son 28 günde 50\'den az gösterim: ortalama sıra güvenilir değil."' : ""}><b${azVeri ? ' class="soluk"' : ""}>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b>${azVeri ? '<span class="sonGoruldu">az veri</span>' : ""}${sonGor}</td>
-      <td class="s">${r.simdi && r.eski ? degisim(r.simdi[0], r.eski[0], true) : "–"}</td>
+    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"${azVeri ? ' title="Son 28 günde ${s.az_gosterim || 50}\'den az gösterim: ortalama sıra güvenilir değil, Google\'da kendiniz arayarak kontrol edin."' : ""}><b${azVeri ? ' class="soluk"' : ""}>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b>${azVeri ? '<span class="sonGoruldu">az veri</span>' : ""}${sonGor}</td>
+      <td class="s">${guvenilir(r) ? degisim(r.simdi[0], r.eski[0], true) : (r.simdi && r.eski ? '<span class="notr" title="En az bir dönemde ' + (s.az_gosterim || 50) + '\'den az gösterim var. Bu kadar az aramada Google\'ın ortalama sırası rastgele oynar, değişim gösterilmez.">az veri</span>' : "–")}</td>
       <td class="s">${r.eski ? sayi(r.eski[1]) : "–"} → ${r.simdi ? sayi(r.simdi[1]) : "–"}</td><td class="s">${r.simdi ? sayi(r.simdi[2]) : "–"}</td></tr>`;
   }
   $("#liste").innerHTML = h;
