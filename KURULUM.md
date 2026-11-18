@@ -40,7 +40,7 @@ Her kontrolde site için öneri listesi de çıkar ve kartın altında gösteril
 
 ## SEO geçmişi (seo.html)
 Her sitenin Google'daki durumunu "eskiden nasıldı, şimdi nasıl" diye gösterir: tıklama, gösterim, tıklama oranı,
-ortalama sıra, haftalık grafik, hangi kelime kaçıncı sırada, yükselen/düşen/yeni çıkan/kaybolan kelimeler ve sayfalar.
+ortalama sıra, haftalık grafik, hangi kelime kaçıncı sırada, yükselen/düşen/yeni çıkan kelimeler, bu dönem verisi gelmeyen kelimeler (son görüldüğü ay ve sırayla) ve sayfalar.
 Karşılaştırma: önceki 28 gün, geçen yılın aynı dönemi ya da geçmişteki herhangi bir ay.
 Veri ücretsiz Google Search Console'dan gelir (16 ay geriye). `seo_arsiv.json` her ayı saklar; 16 aydan eskiler de kaybolmaz.
 Her gün 08:30'da güncellenir. Denemek için: `python3 seo.py --ornek` (uydurma veriyle).
