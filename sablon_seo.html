@@ -87,6 +87,8 @@ tr.detay td{background:var(--izgara);white-space:normal}
 <div class="ust">
   <div class="sekme" id="suzgec" role="group" aria-label="Süzgeç"></div>
   <input type="search" id="ara" placeholder="Ara…" aria-label="Ara">
+  <button class="dugme" id="csvIndir" title="Şu an görünen listenin tamamını Excel'de açılan CSV olarak indirir">⬇ Bu listeyi CSV indir</button>
+  <a class="dugme" href="firsatlar.csv" download style="text-decoration:none" title="Bütün sitelerin fırsat kelimeleri ve sayfaları (her gün güncellenir)">⬇ Tüm sitelerin fırsatları (CSV)</a>
 </div>
 <div class="kart tablo"><table id="liste"></table></div>
 <div style="text-align:center;margin:12px"><button class="dugme" id="dahaFazla" hidden>Daha fazla göster</button></div>
@@ -279,7 +281,7 @@ function gecmis(s, kayit) {
   return `<div class="mini"><div style="flex:1;min-width:260px"><b>Aylara göre sıra</b> <span class="soluk">(yukarı = daha iyi)</span>${svg}</div><div class="tablo" style="max-height:240px;overflow:auto">${t}</div></div>`;
 }
 
-function liste(s) {
+function suz(s) {
   const j = durum.karsi + 1, kayit = s[durum.tur], izlenen = new Set(s.izlenen || []);
   const ara = durum.ara.toLocaleLowerCase("tr");
   let satir = kayit.map(k => ({ad: k[0], simdi: k[1], eski: k[j], k})).filter(r => {
@@ -299,6 +301,29 @@ function liste(s) {
   if (durum.suzgec === "yukselen") satir.sort((a, b) => (b.eski[0] - b.simdi[0]) - (a.eski[0] - a.simdi[0]));
   else if (durum.suzgec === "dusen") satir.sort((a, b) => (a.eski[0] - a.simdi[0]) - (b.eski[0] - b.simdi[0]));
   else satir.sort((a, b) => anahtar(b) - anahtar(a));
+  return satir;
+}
+
+function csvIndir() {
+  // Görünen listenin tamamı (süzgeç + arama), Excel için: UTF-8 BOM, noktalı virgül, virgüllü ondalık
+  const s = V.siteler[durum.site], satir = suz(s), donem = s.donemler[durum.karsi].ad;
+  const d = x => x == null ? "" : String(Math.round(x * 10) / 10).replace(".", ",");
+  const h = x => { x = String(x ?? ""); return /[;"\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; };
+  const satirlar = [["Site", durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa", `Sıra (${donem})`, "Sıra (son 28 gün)",
+    "Değişim (+ = yükseldi)", `Tıklama (${donem})`, "Tıklama (son 28 gün)", "Gösterim (son 28 gün)", "Tıklama oranı %", "Fırsat"]];
+  for (const r of satir) satirlar.push([s.site, r.ad, r.eski ? d(r.eski[0]) : "", r.simdi ? d(r.simdi[0]) : "",
+    r.simdi && r.eski ? d(r.eski[0] - r.simdi[0]) : (r.simdi ? "yeni" : "kayboldu"), r.eski ? r.eski[1] : "", r.simdi ? r.simdi[1] : "",
+    r.simdi ? r.simdi[2] : "", r.simdi && r.simdi[2] ? d(100 * r.simdi[1] / r.simdi[2]) : "",
+    r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20 ? "evet" : ""]);
+  const metin = "\ufeff" + satirlar.map(r => r.map(h).join(";")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([metin], {type: "text/csv;charset=utf-8"}));
+  a.download = `${s.site}-${durum.tur}-${durum.suzgec}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function liste(s) {
+  const kayit = s[durum.tur], izlenen = new Set(s.izlenen || []), satir = suz(s);
   const donem = s.donemler[durum.karsi].ad;
   let h = `<tr><th>${durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa"}</th><th class="s">Sıra (${kacis(donem)})</th><th class="s">Sıra (şimdi)</th>
     <th class="s">Değişim</th><th class="s">Tıklama (önce → şimdi)</th><th class="s">Gösterim (şimdi)</th></tr>`;
@@ -344,6 +369,7 @@ function ciz() {
 }
 $("#karsi").onchange = e => { durum.karsi = +e.target.value; durum.goster = 100; ciz(); };
 $("#ara").oninput = e => { durum.ara = e.target.value; durum.goster = 100; liste(V.siteler[durum.site]); };
+$("#csvIndir").onclick = csvIndir;
 $("#dahaFazla").onclick = () => { durum.goster += 100; liste(V.siteler[durum.site]); };
 addEventListener("resize", () => V.siteler.length && grafik(V.siteler[durum.site]));
 uyarilar(); ciz();

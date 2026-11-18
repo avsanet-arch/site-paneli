@@ -15,6 +15,7 @@ from urllib.error import HTTPError
 
 KOK = os.path.dirname(os.path.abspath(__file__))
 ARSIV = os.path.join(KOK, "seo_arsiv.json")
+FIRSAT_CSV = os.path.join(KOK, "firsatlar.csv")
 KELIME_DOSYASI = os.path.join(KOK, "kelimeler.txt")
 API = "https://searchconsole.googleapis.com/webmasters/v3"
 ARSIV_KELIME = 1000   # her ay saklanan en fazla kelime
@@ -347,6 +348,36 @@ def bing_verisi(anahtar, siteler):
     return out, hatalar
 
 
+def firsat_mi(r):
+    """Sayfadaki "Fırsatlar" süzgeciyle aynı: 4–20. sıra ve en az 20 gösterim."""
+    return bool(r) and 3 < r[0] <= 20 and r[2] >= 20
+
+
+def firsatlar_csv(veriler, yol=FIRSAT_CSV):
+    """Tüm sitelerin fırsatlarını Excel'de düzgün açılan CSV'ye yazar (UTF-8 BOM, noktalı virgül, virgüllü ondalık)."""
+    import csv
+    d = lambda x: f"{x:.1f}".replace(".", ",")
+    satirlar = []
+    for v in veriler:
+        for tur, etiket in (("kelimeler", "Anahtar kelime"), ("sayfalar", "Sayfa")):
+            for k in v.get(tur, []):
+                ad_, simdi, once = k[0], k[1], k[2] if len(k) > 2 else None
+                if not firsat_mi(simdi):
+                    continue
+                ek = max(0, round(simdi[2] * 0.10) - simdi[1])   # 3. sıraya çıkarsa (≈%10 tıklama oranı)
+                satirlar.append([v["site"], etiket, ad_, d(once[0]) if once else "", d(simdi[0]),
+                                 d(once[0] - simdi[0]) if once else "yeni", once[1] if once else "", simdi[1], simdi[2],
+                                 d(100 * simdi[1] / simdi[2]) if simdi[2] else "0,0", ek])
+    satirlar.sort(key=lambda r: (r[0], r[1], -r[10]))
+    with open(yol, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f, delimiter=";")
+        w.writerow(["Site", "Tür", "Anahtar kelime / Sayfa", "Sıra (önceki 28 gün)", "Sıra (son 28 gün)",
+                    "Değişim (+ = yükseldi)", "Tıklama (önceki)", "Tıklama (son)", "Gösterim (son)",
+                    "Tıklama oranı %", "Tahmini ek tıklama (3. sıraya çıkarsa)"])
+        w.writerows(satirlar)
+    return len(satirlar)
+
+
 def main():
     ornek = "--ornek" in sys.argv
     g = Ornek() if ornek else Google()
@@ -391,6 +422,8 @@ def main():
     with open(os.path.join(KOK, "seo.html"), "w", encoding="utf-8") as f:
         f.write(sayfa)
     print("seo.html yazıldı:", len(veriler), "site")
+    if not ornek:
+        print("firsatlar.csv yazıldı:", firsatlar_csv(veriler), "satır")
 
 
 if __name__ == "__main__":
