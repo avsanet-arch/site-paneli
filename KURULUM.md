@@ -100,3 +100,19 @@ Dosyaları GitHub'da depo sayfasında dosyaya tıklayıp sağ üstteki kalem sim
 - **Takip edilecek özel kelime**: `kelimeler.txt` dosyasına `site | kelime` biçiminde satır ekleyin (ör. `bodrum.gen.tr | bodrum nöbetçi eczane`).
 - **Ayakta mı / hız / SSL takibine yeni site**: `sites.txt` dosyasına `https://yenisite.com` satırı ekleyin.
 - **Rakip takibine yeni rakip**: `rakipler.txt` dosyasına `https://rakip.com/sayfa | sizinsiteniz.com` satırı ekleyin.
+
+## Sayfa sağlığı (saglik.html)
+Her sabah (09:27 civarı) çalışır, ek ayar gerekmez (SEO ile aynı Google anahtarını kullanır):
+- **Google dizini**: site haritasındaki sayfalar Search Console'un "URL denetimi" ile her gün parça parça (site başına 120 sayfa)
+  sorulur; dizinde olmayanlar nedeniyle listelenir ("Tarandı ama dizine alınmadı" gibi). 14 günde bir yenilenir.
+- **Site haritaları**: Search Console'a gönderilen haritalar, hata ve uyarı sayıları.
+- **Telefon hızı**: Google PageSpeed ile ana sayfa ve en çok tıklanan 2 sayfa ölçülür (puan, yüklenme süresi, gerçek kullanıcı verisi).
+  Ölçümler sık sık "kota" hatası verirse Google Cloud'da "PageSpeed Insights API"yi açıp bir API anahtarı oluşturun ve
+  GitHub'a `PSI_ANAHTAR` adıyla ekleyin (ücretsiz).
+
+## E-posta uyarıları (uyari.py)
+Sayfa sağlığından hemen sonra çalışır. Kötüye giden bir şey varsa depoda bir **Issue** açar ve size atar; GitHub bunu
+hesabınızın e-postasına gönderir. Uyarılar: tıklamalar %30'dan fazla düştü, önemli bir kelime 3 sıradan fazla geriledi
+(kelimeler.txt'dekiler + en çok tıklanan 30 kelime), dizinde olmayan sayfa bir haftada 10'dan fazla arttı, site haritasında hata,
+ana sayfa telefon hız puanı 50'nin altında. Aynı uyarı 7 gün tekrar gelmez. E-posta gelmiyorsa GitHub'da
+Settings > Notifications > "Email" seçili olmalı.
