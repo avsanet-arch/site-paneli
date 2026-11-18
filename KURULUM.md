@@ -116,3 +116,10 @@ hesabınızın e-postasına gönderir. Uyarılar: tıklamalar %30'dan fazla dü�
 (kelimeler.txt'dekiler + en çok tıklanan 30 kelime), dizinde olmayan sayfa bir haftada 10'dan fazla arttı, site haritasında hata,
 ana sayfa telefon hız puanı 50'nin altında. Aynı uyarı 7 gün tekrar gelmez. E-posta gelmiyorsa GitHub'da
 Settings > Notifications > "Email" seçili olmalı.
+
+## Bir kelimenin sırası neden değişti? (Kelime incele)
+GitHub'da **Actions > "Kelime incele" > Run workflow**: siteyi ve kelimeyi yazın. Kayıtta (log) o kelimenin son 28 gün ve
+önceki 28 gün için cihaz, ülke, sayfa ve gün gün sırası, tıklaması ve gösterimi yazar.
+Not: Search Console'daki "ortalama sıra" her gösterimin ortalamasıdır. Masaüstü, başka ülkeler ya da sitenizin alt sıralardaki
+başka sayfaları karışınca ortalama büyür; tıklamalar artıyorsa gerçek bir düşüş yoktur. Panel bu durumda "TIKLAMA ARTTI" yazar,
+uyarı e-postası da yalnız sıra VE tıklama birlikte düştüğünde gelir.

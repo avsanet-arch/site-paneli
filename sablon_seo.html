@@ -185,6 +185,10 @@ function olcu(s) {
     kutu("Gösterim", a.toplam[2], b.toplam[2], sayi) +
     kutu("Tıklama oranı", ctr(a.toplam), ctr(b.toplam), n => n == null ? "–" : "%" + ondalik(n)) +
     kutu("Ortalama sıra", a.toplam[0], b.toplam[0], ondalik, true);
+  // ortalama sıra tek başına yanıltıcı olabilir: tıklama artarken kötüleşiyorsa açıklama göster
+  if (a.toplam[0] && b.toplam[0] && a.toplam[0] - b.toplam[0] > 0.5 && a.toplam[1] > b.toplam[1])
+    $("#olcu").lastElementChild.insertAdjacentHTML("beforeend",
+      '<div class="soluk" style="font-size:12px;margin-top:4px">Tıklamalar arttığı için bu gerçek bir düşüş değil: site daha çok kelimede (çoğu alt sıralarda) görünmeye başlayınca ortalama büyür.</div>');
   $("#aralik").textContent = `Şimdi: ${a.aralik} · Önce: ${b.aralik}`;
 }
 
@@ -498,8 +502,12 @@ function liste(s) {
     }
     if (izlenen.has(r.ad)) ad += '<span class="etiket e-izle">İZLENEN</span>';
     if (r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20) ad += '<span class="etiket e-firsat">FIRSAT</span>';
+    // Sıra kötüleşmiş görünüyor ama tıklama artmış: ortalama sıra yanıltıyor (ör. masaüstü / başka ülke / derin sayfalar karışıyor)
+    if (r.simdi && r.eski && r.simdi[0] - r.eski[0] > 1 && r.simdi[1] > r.eski[1])
+      ad += '<span class="etiket e-kayip" title="Ortalama sıra kötüleşmiş görünüyor ama tıklamalar ARTMIŞ. Google ortalama sırayı her gösterimin ortalamasıyla hesaplar; masaüstü, başka ülke ya da sitenizin alt sıralardaki başka sayfaları karışınca ortalama büyür. Bu durumda gerçek bir düşüş yoktur.">TIKLAMA ARTTI</span>';
+    const azVeri = r.simdi && r.simdi[2] < 50;
     const sira = kayit.indexOf(r.k);
-    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"><b>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b>${sonGor}</td>
+    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"${azVeri ? ' title="Son 28 günde 50\'den az gösterim: ortalama sıra güvenilir değil."' : ""}><b${azVeri ? ' class="soluk"' : ""}>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b>${azVeri ? '<span class="sonGoruldu">az veri</span>' : ""}${sonGor}</td>
       <td class="s">${r.simdi && r.eski ? degisim(r.simdi[0], r.eski[0], true) : "–"}</td>
       <td class="s">${r.eski ? sayi(r.eski[1]) : "–"} → ${r.simdi ? sayi(r.simdi[1]) : "–"}</td><td class="s">${r.simdi ? sayi(r.simdi[2]) : "–"}</td></tr>`;
   }

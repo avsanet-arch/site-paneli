@@ -5,6 +5,7 @@ GitHub depo sahibine bunu e-postayla bildirir (ek ayar gerekmez).
 Kurallar (son 28 gün, önceki 28 güne göre):
 - Sitenin Google tıklaması %30'dan fazla düştüyse (önceki dönemde en az 30 tıklama varsa)
 - Önemli bir kelime (kelimeler.txt'dekiler + önceki dönemde en çok tıklanan 30 kelime) 3 sıradan fazla düştüyse
+  VE o kelimenin tıklamaları da en az %30 azaldıysa (her iki dönemde en az 50 gösterim)
 - Dizinde olmayan sayfa sayısı bir haftada 10'dan fazla arttıysa
 - Site haritasında yeni hata çıktıysa
 - Ana sayfanın telefon hız puanı 50'nin altına indiyse
@@ -51,7 +52,10 @@ def uyarilar():
         izlenen = set(s.get("izlenen") or [])
         kel = s.get("kelimeler", [])
         onemli = {k[0] for k in sorted([k for k in kel if k[2]], key=lambda k: -k[2][1])[:30] if k[2][1] > 0} | izlenen
-        dusen = sorted([k for k in kel if k[0] in onemli and k[1] and k[2] and k[1][2] >= 10 and k[1][0] - k[2][0] > 3],
+        # Yalnız ortalama sıra yanıltıcı olabilir (masaüstü/başka ülke/alt sayfalar karışır): gerçek düşüş için
+        # sıra 3'ten fazla kötüleşmeli, yeterli gösterim olmalı VE tıklamalar da en az %30 azalmış olmalı.
+        dusen = sorted([k for k in kel if k[0] in onemli and k[1] and k[2] and k[1][2] >= 50 and k[2][2] >= 50
+                        and k[1][0] - k[2][0] > 3 and k[2][1] >= 5 and k[1][1] <= k[2][1] * 0.7],
                        key=lambda k: -(k[1][0] - k[2][0]))
         for k in dusen[:10]:                       # en çok düşen 10 kelime
             ad_, simdi, once = k[0], k[1], k[2]

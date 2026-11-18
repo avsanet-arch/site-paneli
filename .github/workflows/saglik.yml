@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
       - run: pip install google-auth requests
         if: steps.bugun.outputs.atla != '1'
-      - run: python saglik.py
+      - run: python -u saglik.py
         if: steps.bugun.outputs.atla != '1'
         env:
           GSC_ANAHTAR: ${{ secrets.GSC_ANAHTAR }}

@@ -1,0 +1,26 @@
+name: Kelime incele (neden sıra değişti?)
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site (ör. avsa.com)"
+        required: true
+      kelime:
+        description: "Anahtar kelime (ör. avşa)"
+        required: true
+permissions:
+  contents: read
+jobs:
+  teshis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install google-auth requests
+      - run: python teshis.py "$SITE" "$KELIME"
+        env:
+          GSC_ANAHTAR: ${{ secrets.GSC_ANAHTAR }}
+          SITE: ${{ inputs.site }}
+          KELIME: ${{ inputs.kelime }}
