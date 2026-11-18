@@ -19,8 +19,11 @@ ARSIV = os.path.join(KOK, "seo_arsiv.json")
 FIRSAT_CSV = os.path.join(KOK, "firsatlar.csv")
 KELIME_DOSYASI = os.path.join(KOK, "kelimeler.txt")
 API = "https://searchconsole.googleapis.com/webmasters/v3"
-ARSIV_KELIME = 1000   # her ay saklanan en fazla kelime
-ARSIV_SAYFA = 500     # her ay saklanan en fazla sayfa
+ARSIV_KELIME = 5000   # her ay saklanan en fazla kelime
+ARSIV_SAYFA = 2000    # her ay saklanan en fazla sayfa
+DONEM_KELIME = 25000  # son 28 gün / önceki 28 gün / geçen yıl için okunan en fazla kelime
+DONEM_SAYFA = 5000    # (eskiden 1000'di: az aranan marka kelimeleri listeye girmiyor, yanlışlıkla "kayboldu" görünüyordu)
+ARSIV_SURUM = 2       # arşivdeki aylar bu sürümden eskiyse yeniden okunur
 SAYFADA_KELIME = 400  # sayfada gösterilen en fazla kelime (izlenenler hariç)
 SAYFADA_SAYFA = 150
 GECIKME = 3           # Search Console verisi 2-3 gün geriden gelir
@@ -72,11 +75,19 @@ class Google:
 
     def sorgu(self, site, bas, bit, boyut, limit=1000, regex=None):
         govde = {"startDate": bas.isoformat(), "endDate": bit.isoformat(),
-                 "dimensions": [boyut] if boyut else [], "rowLimit": limit, "type": "web"}
+                 "dimensions": [boyut] if boyut else [], "type": "web"}
         if regex:
             govde["dimensionFilterGroups"] = [{"filters": [
                 {"dimension": "query", "operator": "includingRegex", "expression": regex}]}]
-        return self._cagir(f"/sites/{quote(site, safe='')}/searchAnalytics/query", govde).get("rows", [])
+        satirlar = []
+        while len(satirlar) < limit:                # API tek seferde en çok 25000 satır verir
+            parca = min(25000, limit - len(satirlar))
+            govde.update(rowLimit=parca, startRow=len(satirlar))
+            yeni = self._cagir(f"/sites/{quote(site, safe='')}/searchAnalytics/query", govde).get("rows", [])
+            satirlar += yeni
+            if len(yeni) < parca:
+                break
+        return satirlar
 
 
 # ---------------------------------------------------------------- deneme verisi
@@ -213,7 +224,8 @@ def site_verisi(g, site, arsiv, izlenen):
         if bit > son:
             break
         anahtar = ay.strftime("%Y-%m")
-        if anahtar not in a["aylar"] or not a["aylar"][anahtar]["toplam"][2]:   # boş ay tekrar denenir
+        if (anahtar not in a["aylar"] or not a["aylar"][anahtar]["toplam"][2]      # boş ay tekrar denenir
+                or a["aylar"][anahtar].get("surum", 1) < ARSIV_SURUM):           # eski (1000 satırlık) arşiv yenilenir
             satir = [gunler[d.isoformat()] for d in (bas + timedelta(i) for i in range((bit - bas).days + 1))
                      if d.isoformat() in gunler]
             gos = sum(r["impressions"] for r in satir)
@@ -222,6 +234,7 @@ def site_verisi(g, site, arsiv, izlenen):
                            int(sum(r["clicks"] for r in satir)), int(gos)],
                 "kelimeler": tablo(g.sorgu(site, bas, bit, "query", ARSIV_KELIME)),
                 "sayfalar": tablo(g.sorgu(site, bas, bit, "page", ARSIV_SAYFA)),
+                "surum": ARSIV_SURUM,
             }
             if izlenen:
                 a["aylar"][anahtar]["kelimeler"].update(tablo(g.sorgu(site, bas, bit, "query", 500, izlenen)))
@@ -230,7 +243,7 @@ def site_verisi(g, site, arsiv, izlenen):
     # 3) Karşılaştırılacak dönemler: son 28 gün, önceki 28 gün, geçen yıl aynı 28 gün + arşivdeki aylar
     donemler = []
     def ekle(kod, etiket, bas, bit):
-        k = tablo(g.sorgu(site, bas, bit, "query", ARSIV_KELIME))
+        k = tablo(g.sorgu(site, bas, bit, "query", DONEM_KELIME))
         if izlenen:
             k.update(tablo(g.sorgu(site, bas, bit, "query", 500, izlenen)))
         satir = [r for d, r in gunler.items() if bas.isoformat() <= d <= bit.isoformat()]
@@ -239,7 +252,7 @@ def site_verisi(g, site, arsiv, izlenen):
                   int(sum(r["clicks"] for r in satir)), int(gos)]
         donemler.append({"kod": kod, "ad": etiket, "aralik": f"{bas:%d.%m.%Y} – {bit:%d.%m.%Y}", "gun": (bit - bas).days + 1,
                          "toplam": toplam, "kelimeler": k,
-                         "sayfalar": tablo(g.sorgu(site, bas, bit, "page", ARSIV_SAYFA))})
+                         "sayfalar": tablo(g.sorgu(site, bas, bit, "page", DONEM_SAYFA))})
     ekle("simdi", "Son 28 gün", son - timedelta(27), son)
     ekle("once", "Önceki 28 gün", son - timedelta(55), son - timedelta(28))
     if son - timedelta(27 + 364) >= ilk:
@@ -287,7 +300,7 @@ def site_verisi(g, site, arsiv, izlenen):
     izlenen_liste = izlenen_kelimeler().get(ad(site), [])
 
     return {
-        "site": ad(site), "mulk": site, "seri": seri, "seri_tur": seri_tur,
+        "site": ad(site), "mulk": site, "seri": seri, "seri_tur": seri_tur, "son_veri": son.isoformat(),
         "donemler": [{k: d[k] for k in ("kod", "ad", "aralik", "gun", "toplam")} for d in donemler],
         "kelimeler": liste("kelimeler", SAYFADA_KELIME),
         "sayfalar": liste("sayfalar", SAYFADA_SAYFA),

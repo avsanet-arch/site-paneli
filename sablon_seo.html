@@ -29,7 +29,8 @@ select,input[type=search]{font:inherit;font-size:14px;border:1px solid var(--ciz
 .dagilim .kart b{font-size:22px;font-variant-numeric:tabular-nums}
 .etiket{font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
 .e-yeni{background:color-mix(in srgb,var(--yesil) 16%,transparent);color:var(--yesil)}
-.e-kayip{background:color-mix(in srgb,var(--kirmizi) 16%,transparent);color:var(--kirmizi)}
+.e-kayip{background:var(--izgara);color:var(--soluk);cursor:help}
+.sonGoruldu{display:block;font-size:12px;color:var(--soluk);font-weight:400}
 .e-izle{background:color-mix(in srgb,var(--mavi) 16%,transparent);color:var(--mavi)}
 .k a{color:inherit}
 .bos{padding:20px;text-align:center;color:var(--soluk)}
@@ -436,7 +437,7 @@ function csvIndir() {
   const satirlar = [["Site", durum.tur === "kelimeler" ? "Anahtar kelime" : "Sayfa", `Sıra (${donem})`, "Sıra (son 28 gün)",
     "Değişim (+ = yükseldi)", `Tıklama (${donem})`, "Tıklama (son 28 gün)", "Gösterim (son 28 gün)", "Tıklama oranı %", "Fırsat"]];
   for (const r of satir) satirlar.push([s.site, r.ad, r.eski ? d(r.eski[0]) : "", r.simdi ? d(r.simdi[0]) : "",
-    r.simdi && r.eski ? d(r.eski[0] - r.simdi[0]) : (r.simdi ? "yeni" : "kayboldu"), r.eski ? r.eski[1] : "", r.simdi ? r.simdi[1] : "",
+    r.simdi && r.eski ? d(r.eski[0] - r.simdi[0]) : (r.simdi ? "yeni" : "bu dönem veri yok"), r.eski ? r.eski[1] : "", r.simdi ? r.simdi[1] : "",
     r.simdi ? r.simdi[2] : "", r.simdi && r.simdi[2] ? d(100 * r.simdi[1] / r.simdi[2]) : "",
     r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20 ? "evet" : ""]);
   const metin = "\ufeff" + satirlar.map(r => r.map(h).join(";")).join("\r\n");
@@ -444,6 +445,16 @@ function csvIndir() {
   a.href = URL.createObjectURL(new Blob([metin], {type: "text/csv;charset=utf-8"}));
   a.download = `${s.site}-${durum.tur}-${durum.suzgec}-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function sonGoruldugu(s, k) {
+  // donemler: 0 = son 28 gün, sonra önceki 28 gün, geçen yıl, aylar (yeniden eskiye)
+  for (let i = 1; i < s.donemler.length; i++) {
+    const d = s.donemler[i], v = k[i + 1];
+    if (v && /^\d{4}-\d{2}$/.test(d.kod)) return `${d.ad}, ${ondalik(v[0])}. sıra`;
+    if (v && d.kod === "once") return `önceki 28 gün, ${ondalik(v[0])}. sıra`;
+  }
+  return "";
 }
 
 function liste(s) {
@@ -457,11 +468,16 @@ function liste(s) {
       ? `<a href="${kacis(r.ad)}" target="_blank" rel="noopener">${kacis(r.ad.replace(/^https?:\/\/(www\.)?[^/]+/, "") || "/")}</a>`
       : kacis(r.ad);
     if (r.simdi && !r.eski) ad += '<span class="etiket e-yeni">YENİ</span>';
-    if (!r.simdi && r.eski) ad += '<span class="etiket e-kayip">KAYBOLDU</span>';
+    let sonGor = "";
+    if (!r.simdi && r.eski) {
+      const sg = sonGoruldugu(s, r.k);
+      ad += `<span class="etiket e-kayip" title="Google son 28 günde bu kelime için sitenizi raporlamadı. Bu çoğu zaman sıranın düştüğü anlamına GELMEZ: kelime sezon dışında çok az aranıyor olabilir ya da Google çok az aranan kelimeleri gizlilik nedeniyle listede göstermez. Google'da kendiniz arayarak kontrol edebilirsiniz.">VERİ YOK</span>`;
+      if (sg) sonGor = `<span class="sonGoruldu">son görüldü: ${sg}</span>`;
+    }
     if (izlenen.has(r.ad)) ad += '<span class="etiket e-izle">İZLENEN</span>';
     if (r.simdi && r.simdi[0] > 3 && r.simdi[0] <= 20 && r.simdi[2] >= 20) ad += '<span class="etiket e-firsat">FIRSAT</span>';
     const sira = kayit.indexOf(r.k);
-    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"><b>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b></td>
+    h += `<tr class="acilir" data-i="${sira}" title="Ay ay geçmişi görmek için tıklayın"><td class="k">${ad}</td><td class="s">${r.eski ? ondalik(r.eski[0]) : "–"}</td><td class="s"><b>${r.simdi ? ondalik(r.simdi[0]) : "–"}</b>${sonGor}</td>
       <td class="s">${r.simdi && r.eski ? degisim(r.simdi[0], r.eski[0], true) : "–"}</td>
       <td class="s">${r.eski ? sayi(r.eski[1]) : "–"} → ${r.simdi ? sayi(r.simdi[1]) : "–"}</td><td class="s">${r.simdi ? sayi(r.simdi[2]) : "–"}</td></tr>`;
   }
@@ -486,7 +502,7 @@ function ciz() {
   $("#karsi").innerHTML = s.donemler.slice(1).map((d, k) => `<option value="${k + 1}"${k + 1 === durum.karsi ? " selected" : ""}>${kacis(d.ad)}</option>`).join("");
   sekmeler("#metrik", [["tik", "Tıklama"], ["gos", "Gösterim"], ["sira", "Ortalama sıra"]], "metrik");
   sekmeler("#tur", [["kelimeler", "Anahtar kelimeler"], ["sayfalar", "Sayfalar"]], "tur");
-  const sz = [["tumu", "Tümü"], ["yukselen", "Yükselenler"], ["dusen", "Düşenler"], ["yeni", "Yeni çıkanlar"], ["kayip", "Kaybolanlar"], ["firsat", "Fırsatlar"]];
+  const sz = [["tumu", "Tümü"], ["yukselen", "Yükselenler"], ["dusen", "Düşenler"], ["yeni", "Yeni çıkanlar"], ["kayip", "Bu dönem veri yok"], ["firsat", "Fırsatlar"]];
   if (durum.tur === "kelimeler" && (s.izlenen || []).length) sz.push(["izlenen", "İzlediklerim"]);
   sekmeler("#suzgec", sz, "suzgec");
   sekmeler("#msuzgec", [["ihtiyac", "İhtiyaç var"], ["guclu", "Güçlü olduklarımız"], ["farkli", "Bir motorda geride"], ["tumu", "Tümü"]], "msuzgec");
