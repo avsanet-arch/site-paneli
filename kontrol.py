@@ -111,24 +111,38 @@ def oneriler_bul(url, sonuc, h, govde, son_url):
     sira = {"yuksek": 0, "orta": 1, "dusuk": 2}
     return sorted(o, key=lambda x: sira[x[0]])
 
-def kontrol_et(url):
-    basliklar, govde, son_url = {}, "", url
-    sonuc = {"url": url, "zaman": datetime.now(timezone.utc).isoformat(timespec="seconds")}
-    bas = time.monotonic()
+DENEME = 3          # site yanıt vermezse kaç kez denenir
+BEKLEME = 20        # denemeler arası saniye
+ZAMAN_ASIMI = 30    # tek denemede en fazla bekleme (saniye)
+
+def istek(url):
+    """(kod, başlıklar, gövde, son_url, hata) döner."""
     try:
         req = Request(url, headers={"User-Agent": "SiteIzlemePaneli/1.0"})
-        with urlopen(req, timeout=15) as r:
-            sonuc["kod"] = r.status
-            basliklar = {k.lower(): v for k, v in r.headers.items()}
-            govde = r.read(400_000).decode("utf-8", "replace")
-            son_url = r.geturl()
+        with urlopen(req, timeout=ZAMAN_ASIMI) as r:
+            return (r.status, {k.lower(): v for k, v in r.headers.items()},
+                    r.read(400_000).decode("utf-8", "replace"), r.geturl(), None)
     except HTTPError as e:
-        sonuc["kod"] = e.code
-        basliklar, govde, son_url = {k.lower(): v for k, v in e.headers.items()}, "", url
+        return e.code, {k.lower(): v for k, v in e.headers.items()}, "", url, None
     except Exception as e:
-        sonuc["kod"] = None
-        sonuc["hata"] = str(getattr(e, "reason", e))[:120]
-    sonuc["ms"] = int((time.monotonic() - bas) * 1000)
+        return None, {}, "", url, str(getattr(e, "reason", e))[:120]
+
+def kontrol_et(url):
+    sonuc = {"url": url, "zaman": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    # Anlık takılmalarda yanlış alarm vermemek için başarısız olursa birkaç kez daha dene
+    for deneme in range(1, DENEME + 1):
+        bas = time.monotonic()
+        kod, basliklar, govde, son_url, hata = istek(url)
+        sonuc["ms"] = int((time.monotonic() - bas) * 1000)
+        if kod is not None and kod < 500:
+            break
+        if deneme < DENEME:
+            print(f"   {url}: {deneme}. deneme başarısız ({kod or hata}), {BEKLEME} sn sonra tekrar")
+            time.sleep(BEKLEME)
+    sonuc["kod"] = kod
+    sonuc["deneme"] = deneme
+    if hata:
+        sonuc["hata"] = f"{hata} ({DENEME} denemede de yanıt yok)"
     sonuc["ayakta"] = sonuc["kod"] is not None and sonuc["kod"] < 400
     host = urlparse(url).hostname
     sonuc["ssl_gun"] = ssl_bitis(host) if url.startswith("https") else None
@@ -162,7 +176,7 @@ def html_uret(sonuclar, gecmis):
             ssl_t = f'{s["ssl_gun"]} gün'
             ssl_c = "kotu" if s["ssl_gun"] < 7 else ("uyari" if s["ssl_gun"] < 30 else "iyi")
         durum = "Ayakta" if s["ayakta"] else "Çöktü"
-        detay = f'HTTP {s["kod"]}' if s["kod"] else html.escape(s.get("hata", "yanıt yok"))
+        detay = (f'HTTP {s["kod"]}' + (f' · {s["deneme"]}. denemede açıldı' if s.get("deneme", 1) > 1 and s["ayakta"] else '')) if s["kod"] else html.escape(s.get("hata", "yanıt yok"))
         on = s.get("oneriler", [])
         oneri_html = ""
         if on:
