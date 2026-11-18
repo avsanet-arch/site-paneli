@@ -31,6 +31,8 @@ jobs:
         if: steps.bugun.outputs.atla != '1'
         env:
           GSC_ANAHTAR: ${{ secrets.GSC_ANAHTAR }}
+          BING_ANAHTAR: ${{ secrets.BING_ANAHTAR }}
+          YANDEX_ANAHTAR: ${{ secrets.YANDEX_ANAHTAR }}
       - name: Sonuçları kaydet
         if: steps.bugun.outputs.atla != '1'
         run: |

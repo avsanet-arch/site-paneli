@@ -46,7 +46,7 @@ Veri ücretsiz Google Search Console'dan gelir (16 ay geriye). `seo_arsiv.json` 
 Her gün 08:30'da güncellenir. Denemek için: `python3 seo.py --ornek` (uydurma veriyle).
 
 Sayfada ayrıca: cihaz ve ülke kırılımı, "Fırsatlar" süzgeci (4–20. sıradaki çok aranan kelimeler), bir kelimeye tıklayınca
-o kelimenin ay ay sıra geçmişi. Bing bağlıysa ayrı bir Bing bölümü.
+o kelimenin ay ay sıra geçmişi. Bing ve Yandex bağlıysa üç arama motoru karşılaştırması ve ayrı Bing / Yandex bölümleri.
 
 ### Bir kerelik kurulum (yaklaşık 15 dakika)
 1. https://console.cloud.google.com adresine Gmail hesabınızla girin, üstten **yeni proje** açın (adı: site-paneli).
@@ -63,11 +63,35 @@ o kelimenin ay ay sıra geçmişi. Bing bağlıysa ayrı bir Bing bölümü.
 Not: GitHub Pages ücretsiz planda yalnızca herkese açık depoda çalışır; o zaman bu sayfadaki rakamları adresi bilen herkes görebilir
 (sayfa Google'a kapalıdır). İstemezseniz depoyu gizli tutup `seo.html`'i indirip bilgisayarınızda açabilirsiniz.
 
-### Bing'i bağlamak (isteğe bağlı, ücretsiz)
-1. https://www.bing.com/webmasters adresine girin (siteleriniz orada doğrulanmış olmalı; Search Console'dan "içe aktar" ile tek tıkla eklenebilir).
-2. Sağ üstteki dişli (Ayarlar) > **API Access** > **API Key** > anahtarı oluşturun ve kopyalayın.
+### Bing ve Yandex'i bağlamak (isteğe bağlı, ücretsiz)
+Bağlanınca SEO sayfasının altında "Google, Bing ve Yandex: nerede güçlüyüz, nerede ihtiyaç var?" bölümü dolar:
+her kelimenin üç arama motorundaki sırası yan yana, "Güçlü" (1–3. sıra), "Fırsat" (4–20. sıra, çok aranan) ve
+"Bing'de / Yandex'te / Google'da geride" etiketleriyle. Hangisi bağlı değilse o sütun boş kalır, sayfa yine çalışır.
+
+#### Bing (yaklaşık 5 dakika)
+1. https://www.bing.com/webmasters adresine Microsoft ya da Google hesabınızla girin.
+   Siteleriniz orada yoksa **Search Console'dan içe aktar** düğmesiyle hepsini tek seferde ekleyin (doğrulama gerekmez).
+2. Sağ üstteki dişli (**Ayarlar**) > **API Access** > **API Key** > anahtarı oluşturun ve kopyalayın.
 3. GitHub deposunda **Settings > Secrets and variables > Actions > New repository secret**: ad `BING_ANAHTAR`, değer kopyaladığınız anahtar.
-Ertesi sabah SEO sayfasında Bing bölümü dolar.
+
+#### Yandex (yaklaşık 10 dakika)
+1. https://webmaster.yandex.com adresine Yandex hesabınızla girin (yoksa ücretsiz açın).
+   Her siteyi **Site ekle** ile ekleyin ve doğrulayın. En kolayı meta etiketi: bodrum.gen.tr, avsa.com ve izmir.gen.tr'de
+   yönetim panelinde **Ayarlar > Sosyal medya ve Google > Yandex doğrulama** kutusu var, Yandex'in verdiği etiketi oraya yapıştırın.
+   Diğer sitelerde Yandex'in verdiği küçük HTML dosyasını sitenin ana klasörüne yükleyin ya da DNS kaydını cPanel'den ekleyin.
+2. https://oauth.yandex.com/client/new adresinde yeni uygulama oluşturun:
+   ad `site-paneli`; platform olarak **Web services**; Redirect URI kutusuna `https://oauth.yandex.com/verification_code`;
+   izinlerde **Yandex.Webmaster > Get information about the site (webmaster:hostinfo)** işaretli olsun. Kaydedin ve
+   **ClientID** yazısını kopyalayın.
+3. Tarayıcıda şu adresi açın (sonundaki ClientID yerine kopyaladığınızı yazın):
+   `https://oauth.yandex.com/authorize?response_type=token&client_id=ClientID`
+   **İzin ver** deyin; ekranda uzun bir anahtar (token) çıkar, kopyalayın.
+4. GitHub deposunda yeni secret: ad `YANDEX_ANAHTAR`, değer bu anahtar.
+5. Anahtar yaklaşık bir yıl geçerlidir; süresi dolunca SEO sayfasının üstünde "Yandex: anahtar geçersiz" uyarısı çıkar,
+   3. adımı tekrarlayıp secret'ı güncellemeniz yeterli.
+
+Anahtarları ekledikten sonra **Actions** sekmesinden "SEO geçmişini güncelle"yi elle çalıştırırsanız hemen görürsünüz;
+çalıştırmazsanız ertesi sabah kendiliğinden gelir.
 
 ## Yeni adres eklemek
 Dosyaları GitHub'da depo sayfasında dosyaya tıklayıp sağ üstteki kalem simgesiyle düzenleyin, alttan **Commit changes** deyin.

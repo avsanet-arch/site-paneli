@@ -5,6 +5,7 @@ tıklama ve gösterimlerini çeker; "eskiden nasıldı, şimdi nasıl" sayfası 
 - Search Console 16 ay geriye veri tutar. Bu betik her ayın özetini seo_arsiv.json'a
   yazar, böylece 16 aydan eski aylar da kaybolmaz.
 - Kimlik: GSC_ANAHTAR ortam değişkeni (hizmet hesabı JSON'u) ya da gsc_anahtar.json dosyası.
+- İsteğe bağlı: BING_ANAHTAR (Bing Webmaster API anahtarı), YANDEX_ANAHTAR (Yandex Webmaster OAuth anahtarı).
 - Denemek için: python3 seo.py --ornek   (Google'a bağlanmaz, uydurma veriyle sayfayı gösterir)
 """
 import json, os, re, sys, math, random, html
@@ -326,7 +327,10 @@ def bing_verisi(anahtar, siteler):
             kel = [(bing_tarih(r.get("Date")), r) for r in bing_cagir("GetQueryStats", anahtar, siteUrl=url)]
             def toplam(bas, bit):
                 t = [r for d, r in gunluk if d and bas <= d <= bit]
-                return [None, sum(r.get("Clicks", 0) for r in t), sum(r.get("Impressions", 0) for r in t)]
+                k = [r for d, r in kel if d and bas <= d <= bit]
+                gos = sum(r.get("Impressions", 0) for r in k)
+                sira = round(sum(r.get("AvgImpressionPosition", 0) * r.get("Impressions", 0) for r in k) / gos, 1) if gos else None
+                return [sira, sum(r.get("Clicks", 0) for r in t), sum(r.get("Impressions", 0) for r in t)]
             def kelimeler(bas, bit):
                 k = {}
                 for d, r in kel:
@@ -345,6 +349,78 @@ def bing_verisi(anahtar, siteler):
         except Exception as e:
             print("  Bing hatası:", a_, e)
             hatalar.append(f"Bing {a_}: {e}")
+    return out, hatalar
+
+
+# ---------------------------------------------------------------- Yandex (isteğe bağlı)
+YANDEX_API = "https://api.webmaster.yandex.net/v4"
+
+def yandex_cagir(yol, anahtar, **param):
+    from urllib.parse import urlencode
+    url = YANDEX_API + yol + ("?" + urlencode(param, doseq=True) if param else "")
+    try:
+        with urlopen(Request(url, headers={"Authorization": "OAuth " + anahtar}), timeout=60) as y:
+            return json.load(y)
+    except HTTPError as e:
+        if e.code in (401, 403):
+            raise RuntimeError("anahtar geçersiz ya da süresi dolmuş (KURULUM.md'deki Yandex adımlarıyla yenisini alın)")
+        raise RuntimeError(f"hata {e.code}: {e.read()[:200].decode('utf-8', 'replace')}")
+
+def yandex_verisi(anahtar, siteler):
+    """Yandex Webmaster: site başına son 28 gün / önceki 28 gün tıklama, gösterim, ortalama sıra ve kelimeler."""
+    out, hatalar = {}, []
+    try:
+        uid = yandex_cagir("/user", anahtar)["user_id"]
+        hostlar = {}
+        for h in yandex_cagir(f"/user/{uid}/hosts", anahtar).get("hosts", []):
+            if h.get("verified"):
+                a_ = ad(h.get("unicode_host_url") or h.get("ascii_host_url", ""))
+                # aynı site www'li ve www'siz ekliyse ana aynayı (main_mirror olmayanı) tercih et
+                if a_ not in hostlar or not h.get("main_mirror"):
+                    hostlar[a_] = h
+    except Exception as e:
+        print("Yandex hatası:", e)
+        return out, [f"Yandex: {e}"]
+    gostergeler = ["TOTAL_SHOWS", "TOTAL_CLICKS", "AVG_SHOW_POSITION"]
+    son = date.today() - timedelta(1)
+    s1, s0 = son - timedelta(27), son - timedelta(55)
+    for a_ in siteler:
+        h = hostlar.get(a_)
+        if not h:
+            continue
+        yol = f"/user/{uid}/hosts/{quote(h['host_id'], safe='')}"
+        try:
+            def kelimeler(bas, bit):
+                r = yandex_cagir(yol + "/search-queries/popular", anahtar, order_by="TOTAL_SHOWS",
+                                 query_indicator=gostergeler, date_from=bas.isoformat(), date_to=bit.isoformat(), limit=500)
+                k = {}
+                for q in r.get("queries", []):
+                    i = q.get("indicators", {})
+                    if q.get("query_text") and i.get("TOTAL_SHOWS"):
+                        k[q["query_text"]] = [round(i["AVG_SHOW_POSITION"], 1) if i.get("AVG_SHOW_POSITION") else None,
+                                              int(i.get("TOTAL_CLICKS") or 0), int(i["TOTAL_SHOWS"])]
+                return k
+            gecmis = yandex_cagir(yol + "/search-queries/all/history", anahtar, query_indicator=gostergeler,
+                                  date_from=(son - timedelta(180)).isoformat(), date_to=son.isoformat()).get("indicators", {})
+            gun = {}
+            for gosterge, sira in (("TOTAL_CLICKS", 0), ("TOTAL_SHOWS", 1), ("AVG_SHOW_POSITION", 2)):
+                for n in gecmis.get(gosterge, []):
+                    gun.setdefault(n["date"][:10], [0, 0, None])[sira] = n.get("value")
+            def toplam(bas, bit):
+                t = [v for d, v in gun.items() if bas.isoformat() <= d <= bit.isoformat()]
+                gos = sum(v[1] or 0 for v in t)
+                sira = sum((v[2] or 0) * (v[1] or 0) for v in t)
+                return [round(sira / gos, 1) if gos else None, int(sum(v[0] or 0 for v in t)), int(gos)]
+            simdi, once = kelimeler(s1, son), kelimeler(s0, s1 - timedelta(1))
+            secim = sorted(simdi, key=lambda q: -simdi[q][2])[:300]
+            secim += [q for q in sorted(once, key=lambda q: -once[q][2])[:100] if q not in simdi]
+            out[a_] = {"mulk": h.get("unicode_host_url") or h.get("ascii_host_url"),
+                       "simdi": toplam(s1, son), "once": toplam(s0, s1 - timedelta(1)),
+                       "kelimeler": [[q, simdi.get(q), once.get(q)] for q in secim],
+                       "seri": [[d, int(v[0] or 0), int(v[1] or 0)] for d, v in sorted(gun.items())]}
+        except Exception as e:
+            print("  Yandex hatası:", a_, e)
+            hatalar.append(f"Yandex {a_}: {e}")
     return out, hatalar
 
 
@@ -397,12 +473,17 @@ def main():
         except Exception as e:
             print("  hata:", e)
             hatalar.append(f"{ad(s)}: {e}")
-    if ornek and veriler:                           # örnekte Bing kutusunu da göster
-        v = veriler[0]
-        v["bing"] = {"mulk": "https://www." + v["site"] + "/", "simdi": [None, 412, 9800], "once": [None, 350, 9100],
-                     "kelimeler": [[k[0], [round(k[1][0] * 0.8, 1), k[1][1] // 4, k[1][2] // 5] if k[1] else None,
-                                    [round(k[1][0] * 0.9, 1), k[1][1] // 5, k[1][2] // 5] if k[1] else None] for k in v["kelimeler"][:40]],
-                     "seri": [[r_[0], r_[1] // 9, r_[2] // 9] for r_ in v["seri"][-26:]]}
+    if ornek:                                       # örnekte Bing ve Yandex kutularını da göster
+        for n, v in enumerate(veriler):
+            for motor, carpan in (("bing", 0.8), ("yandex", 1.4)):
+                if motor == "yandex" and n % 2:
+                    continue                        # bazı siteler Yandex'e bağlı değilmiş gibi
+                r = random.Random(motor + v["site"])
+                def ornek_k(k):
+                    return [round(min(60, max(1, k[0] * carpan * r.uniform(.5, 1.8))), 1), k[1] // 4, max(5, k[2] // 5)] if k else None
+                v[motor] = {"mulk": "https://www." + v["site"] + "/", "simdi": [11.2, 412, 9800], "once": [12.4, 350, 9100],
+                            "kelimeler": [[k[0], ornek_k(k[1]), ornek_k(k[2])] for k in v["kelimeler"][:60] if r.random() < .75],
+                            "seri": [[r_[0], r_[1] // 9, r_[2] // 9] for r_ in v["seri"][-26:]]}
     bing_anahtar = os.environ.get("BING_ANAHTAR", "").strip()
     if bing_anahtar and not ornek:
         print("Bing verisi okunuyor")
@@ -411,6 +492,14 @@ def main():
         for v in veriler:
             if v["site"] in bing:
                 v["bing"] = bing[v["site"]]
+    yandex_anahtar = os.environ.get("YANDEX_ANAHTAR", "").strip()
+    if yandex_anahtar and not ornek:
+        print("Yandex verisi okunuyor")
+        yandex, yh = yandex_verisi(yandex_anahtar, [v["site"] for v in veriler])
+        hatalar += yh
+        for v in veriler:
+            if v["site"] in yandex:
+                v["yandex"] = yandex[v["site"]]
     if not ornek:
         with open(ARSIV, "w", encoding="utf-8") as f:
             json.dump(arsiv, f, ensure_ascii=False, separators=(",", ":"))

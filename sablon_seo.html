@@ -42,10 +42,15 @@ tr.detay td{background:var(--izgara);white-space:normal}
 .mini{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}.mini svg{display:block;width:100%;max-width:520px;height:auto;margin-top:6px}
 .mini table{width:auto;font-size:13px}.mini td,.mini th{padding:3px 8px}
 .e-firsat{background:color-mix(in srgb,var(--sari) 18%,transparent);color:var(--sari)}
+.e-guclu{background:color-mix(in srgb,var(--yesil) 16%,transparent);color:var(--yesil)}
+.e-zayif{background:color-mix(in srgb,var(--kirmizi) 14%,transparent);color:var(--kirmizi)}
+.motor .satir{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--soluk)}.motor .satir span:last-child{color:var(--yazi);font-variant-numeric:tabular-nums}
+.motor h3{margin:0 0 4px;font-size:15px}.motor.kapali{opacity:.7}
+td.sira-iyi{color:var(--yesil);font-weight:700}td.sira-orta{color:var(--sari);font-weight:600}
 </style></head><body><div class="kap">
 <nav><a href="index.html">← Sitelerim</a><a href="rakipler.html">Rakip takibi</a></nav>
 <h1>SEO geçmişi</h1>
-<div class="soluk">Kaynak: Google Search Console · Son güncelleme: {{ZAMAN}} · Google verisi 2–3 gün geriden gelir</div>
+<div class="soluk">Kaynak: Google Search Console, Bing Webmaster Tools, Yandex Webmaster · Son güncelleme: {{ZAMAN}} · Google verisi 2–3 gün geriden gelir</div>
 <div id="uyarilar"></div>
 <details class="bilgi"><summary>Bu sayfa nasıl okunur?</summary>
 <ul>
@@ -54,11 +59,15 @@ tr.detay td{background:var(--izgara);white-space:normal}
 <li><b>Karşılaştırma:</b> "Son 28 gün" her zaman şimdiki durumdur. Üstteki seçimle önceki 28 günü, geçen yılın aynı dönemini ya da geçmişteki bir ayı seçip "o zaman neredeydim" görebilirsiniz.</li>
 <li><b>Bir kelimeye tıklayın:</b> o kelimenin ay ay sıra geçmişi açılır.</li>
 <li><b>Fırsatlar:</b> 4–20. sıradaki, çok aranan kelimeler. Bu sayfaları biraz güçlendirmek (başlık, içerik, iç bağlantı) en hızlı tıklama artışını getirir.</li>
-<li>Google verisi 2–3 gün geriden gelir; sayfa her sabah 08:30'da kendiliğinden yenilenir. Bing verisi ayrı bölümdedir (bağlandıysa).</li>
+<li><b>Google, Bing ve Yandex karşılaştırması</b> (sayfanın altında): aynı kelimede üç arama motorunda kaçıncı sıradayız.
+"Güçlü" = 1–3. sıra; "İhtiyaç var" = 4–20. sırada çok aranan kelimeler, bir motorda iyi olup ötekinde geride kaldıklarımız.</li>
+<li>Google verisi 2–3 gün geriden gelir; sayfa her sabah 08:30'da kendiliğinden yenilenir. Bing ve Yandex bağlı değilse o sütunlar boş kalır.</li>
 </ul></details>
 
 <h2>Tüm siteler <span class="soluk">(son 28 gün, önceki 28 güne göre)</span></h2>
 <div class="kart tablo"><table id="genel"></table></div>
+<h2>Arama motorlarına göre tüm siteler <span class="soluk">(son 28 gün tıklama · ilk 3'teki kelime sayısı)</span></h2>
+<div class="kart tablo"><table id="motorGenel"></table></div>
 
 <div class="ust">
   <div class="sekme" id="siteSekme" role="group" aria-label="Site"></div>
@@ -92,8 +101,21 @@ tr.detay td{background:var(--izgara);white-space:normal}
 </div>
 <div class="kart tablo"><table id="liste"></table></div>
 <div style="text-align:center;margin:12px"><button class="dugme" id="dahaFazla" hidden>Daha fazla göster</button></div>
+<h2 id="motorlar">Google, Bing ve Yandex: nerede güçlüyüz, nerede ihtiyaç var? <span class="soluk">(son 28 gün)</span></h2>
+<div class="olcu" id="motorOzet"></div>
+<div class="ust">
+  <div class="sekme" id="msuzgec" role="group" aria-label="Karşılaştırma süzgeci"></div>
+  <input type="search" id="mara" placeholder="Kelime ara…" aria-label="Kelime ara">
+  <button class="dugme" id="mcsv" title="Şu an görünen karşılaştırma listesini Excel'de açılan CSV olarak indirir">⬇ CSV indir</button>
+</div>
+<div class="kart tablo"><table id="mliste"></table></div>
+<div style="text-align:center;margin:12px"><button class="dugme" id="mDaha" hidden>Daha fazla göster</button></div>
+<p class="soluk">Bir kelime Bing ya da Yandex listesinde hiç yoksa orada ya çok gerideyiz ya da o kelime orada az aranıyor; "yok" uyarısı bu yüzden
+yalnızca Google'da çok gösterim alan (100+) kelimelerde çıkar. Bing ve Yandex'te Türkiye'deki arama sayısı Google'dan çok daha azdır.</p>
 <h2>Bing <span class="soluk">(Microsoft arama motoru; son 28 gün, önceki 28 güne göre)</span></h2>
 <div id="bing"></div>
+<h2>Yandex <span class="soluk">(son 28 gün, önceki 28 güne göre)</span></h2>
+<div id="yandex"></div>
 <p class="soluk">Sıra: Google'da ortalama kaçıncı sırada çıktığınız (1 = en üst). ▲ yeşil = yükseldi (daha iyi), ▼ kırmızı = düştü.
 Aylık dönemler 28–31 gün sürdüğü için tıklama/gösterim sayıları birebir eşit sürelerde değildir; sıralar doğrudan karşılaştırılabilir.</p>
 </div>
@@ -104,7 +126,7 @@ const sayi = n => n == null ? "–" : Math.round(n).toLocaleString("tr-TR");
 const ondalik = n => n == null ? "–" : n.toLocaleString("tr-TR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
 const yuzde = n => n == null ? "–" : "%" + n.toLocaleString("tr-TR", {maximumFractionDigits: 1});
 const kacis = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
-let durum = {site: 0, karsi: 1, metrik: "tik", tur: "kelimeler", suzgec: "tumu", ara: "", goster: 100};
+let durum = {site: 0, karsi: 1, metrik: "tik", tur: "kelimeler", suzgec: "tumu", ara: "", goster: 100, msuzgec: "ihtiyac", mara: "", mgoster: 100};
 
 function degisim(simdi, eski, ters) {
   // ters: sıra için (küçük = iyi)
@@ -147,7 +169,7 @@ function sekmeler(yer, secenekler, anahtar) {
   $(yer).querySelectorAll("button").forEach(b => b.onclick = () => {
     durum[anahtar] = isNaN(b.dataset.k) ? b.dataset.k : +b.dataset.k;
     if (anahtar === "site") durum.karsi = 1;
-    durum.goster = 100; ciz();
+    durum.goster = 100; durum.mgoster = 100; ciz();
   });
 }
 
@@ -244,17 +266,119 @@ function kirilim(s) {
   $("#kirilim").innerHTML = tablo("Cihaza göre (son 28 gün)", s.cihaz, k => CIHAZ[k] || k) +
     tablo("Ülkeye göre (son 28 gün)", s.ulke, k => ULKE[k] || k.toUpperCase());
 }
-function bing(s) {
-  const b = s.bing;
-  if (!b) { $("#bing").innerHTML = '<div class="kart soluk">Bing henüz bağlı değil. Bağlamak için KURULUM.md\'deki "Bing" adımlarına bakın (ücretsiz, 5 dakika).</div>'; return; }
+const MOTOR = {google: "Google", bing: "Bing", yandex: "Yandex"};
+const MOTORDA = {google: "Google'da", bing: "Bing'de", yandex: "Yandex'te"};
+const KURULUM_NOTU = {bing: "KURULUM.md'deki \"Bing\" adımlarına bakın (ücretsiz, 5 dakika)", yandex: "KURULUM.md'deki \"Yandex\" adımlarına bakın (ücretsiz, 10 dakika)"};
+function motorBolumu(s, m) {
+  const b = s[m], ad = MOTOR[m];
+  if (!b) { $("#" + m).innerHTML = `<div class="kart soluk">${ad} bu site için bağlı değil. Bağlamak için ${KURULUM_NOTU[m]}.</div>`; return; }
   let h = `<div class="olcu"><div class="kart"><small>Tıklama</small><b>${sayi(b.simdi[1])}</b>${degisim(b.simdi[1], b.once[1])} <span class="eski">önce ${sayi(b.once[1])}</span></div>
-    <div class="kart"><small>Gösterim</small><b>${sayi(b.simdi[2])}</b>${degisim(b.simdi[2], b.once[2])} <span class="eski">önce ${sayi(b.once[2])}</span></div></div>`;
-  h += `<div class="kart tablo" style="margin-top:12px"><table><tr><th>Bing'de aranan kelime</th><th class="s">Sıra (önce)</th><th class="s">Sıra (şimdi)</th><th class="s">Değişim</th><th class="s">Tıklama</th><th class="s">Gösterim</th></tr>`;
-  if (!b.kelimeler.length) h += '<tr><td colspan="6" class="bos">Bing bu dönem için kelime vermedi.</td></tr>';
+    <div class="kart"><small>Gösterim</small><b>${sayi(b.simdi[2])}</b>${degisim(b.simdi[2], b.once[2])} <span class="eski">önce ${sayi(b.once[2])}</span></div>
+    <div class="kart"><small>Ortalama sıra</small><b>${ondalik(b.simdi[0])}</b>${degisim(b.simdi[0], b.once[0], true)} <span class="eski">önce ${ondalik(b.once[0])}</span></div></div>`;
+  h += `<div class="kart tablo" style="margin-top:12px"><table><tr><th>${MOTORDA[m]} aranan kelime</th><th class="s">Sıra (önce)</th><th class="s">Sıra (şimdi)</th><th class="s">Değişim</th><th class="s">Tıklama</th><th class="s">Gösterim</th></tr>`;
+  if (!b.kelimeler.length) h += `<tr><td colspan="6" class="bos">${ad} bu dönem için kelime vermedi.</td></tr>`;
   for (const [q, a, o] of b.kelimeler.slice(0, 50))
     h += `<tr><td class="k">${kacis(q)}</td><td class="s">${o ? ondalik(o[0]) : "–"}</td><td class="s"><b>${a ? ondalik(a[0]) : "–"}</b></td>
       <td class="s">${a && o ? degisim(a[0], o[0], true) : "–"}</td><td class="s">${a ? sayi(a[1]) : "–"}</td><td class="s">${a ? sayi(a[2]) : "–"}</td></tr>`;
-  $("#bing").innerHTML = h + "</table></div>";
+  $("#" + m).innerHTML = h + "</table></div>";
+}
+
+// ---- Üç motor karşılaştırması
+const kucuk = q => String(q).trim().toLocaleLowerCase("tr");
+function motorKelimeleri(s) {
+  // {kelime: {google:[sıra,tık,gös], bing:…, yandex:…}} (son 28 gün)
+  const t = new Map();
+  const koy = (q, m, v) => { if (!v) return; const k = kucuk(q); if (!t.has(k)) t.set(k, {ad: q}); t.get(k)[m] = v; };
+  for (const k of s.kelimeler) koy(k[0], "google", k[1]);
+  for (const m of ["bing", "yandex"]) if (s[m]) for (const [q, a] of s[m].kelimeler) koy(q, m, a);
+  return [...t.values()];
+}
+function etiketler(r, s) {
+  const e = [], g = r.google;
+  const sira = m => r[m] ? r[m][0] : null;
+  if (["google", "bing", "yandex"].some(m => sira(m) != null && sira(m) <= 3)) e.push(["guclu", "GÜÇLÜ"]);
+  if (g && g[0] > 3 && g[0] <= 20 && g[2] >= 20) e.push(["firsat", "GOOGLE FIRSATI"]);
+  for (const m of ["bing", "yandex"]) {
+    const v = r[m];
+    if (v && v[0] > 3 && v[0] <= 20 && v[2] >= 10) e.push(["firsat", MOTOR[m].toLocaleUpperCase("tr") + " FIRSATI"]);
+    if (!s[m] || !g || g[0] > 10) continue;
+    if (v && v[0] > 20) e.push(["zayif", MOTORDA[m].toLocaleUpperCase("tr") + " GERİDE"]);
+    else if (!v && g[2] >= 100) e.push(["zayif", MOTORDA[m].toLocaleUpperCase("tr") + " YOK"]);
+  }
+  const iyiBaska = ["bing", "yandex"].some(m => sira(m) != null && sira(m) <= 10);
+  if (iyiBaska && (!g || g[0] > 10)) e.push(["zayif", "GOOGLE'DA GERİDE"]);
+  return e;
+}
+function motorSatirlari(s) {
+  const ara = kucuk(durum.mara || "");
+  const gos = r => ["google", "bing", "yandex"].reduce((t, m) => t + (r[m] ? r[m][2] : 0), 0);
+  return motorKelimeleri(s).map(r => ({...r, e: etiketler(r, s), toplam: gos(r)})).filter(r => {
+    if (ara && !kucuk(r.ad).includes(ara)) return false;
+    const var_ = t => r.e.some(x => x[0] === t);
+    switch (durum.msuzgec) {
+      case "guclu": return var_("guclu");
+      case "ihtiyac": return var_("firsat") || var_("zayif");
+      case "farkli": return var_("zayif");
+      default: return true;
+    }
+  }).sort((a, b) => b.toplam - a.toplam);
+}
+function siraHucre(v) {
+  if (!v) return '<td class="s soluk">–</td>';
+  const c = v[0] <= 3 ? "sira-iyi" : v[0] <= 10 ? "" : v[0] <= 20 ? "sira-orta" : "soluk";
+  return `<td class="s ${c}" title="${sayi(v[1])} tıklama · ${sayi(v[2])} gösterim">${ondalik(v[0])}</td>`;
+}
+function motorOzet(s) {
+  const kartlar = ["google", "bing", "yandex"].map(m => {
+    const k = m === "google" ? {simdi: s.donemler[0].toplam, once: (s.donemler[1] || {}).toplam || [], kelimeler: s.kelimeler} : s[m];
+    if (!k) return `<div class="kart motor kapali"><h3>${MOTOR[m]}</h3><div class="soluk">Bağlı değil. ${KURULUM_NOTU[m]}.</div></div>`;
+    const sv = k.kelimeler.map(x => x[1]).filter(Boolean);
+    const say = (a, b) => sv.filter(v => v[0] > a && v[0] <= b).length;
+    const fir = sv.filter(v => v[0] > 3 && v[0] <= 20 && v[2] >= (m === "google" ? 20 : 10)).length;
+    return `<div class="kart motor"><h3>${MOTOR[m]}</h3>
+      <div class="satir"><span>Tıklama</span><span>${sayi(k.simdi[1])} ${degisim(k.simdi[1], k.once[1])}</span></div>
+      <div class="satir"><span>Gösterim</span><span>${sayi(k.simdi[2])} ${degisim(k.simdi[2], k.once[2])}</span></div>
+      <div class="satir"><span>Ortalama sıra</span><span>${ondalik(k.simdi[0])}</span></div>
+      <div class="satir"><span>Güçlü (1–3. sıra)</span><span class="iyi">${say(0, 3)} kelime</span></div>
+      <div class="satir"><span>İlk sayfa (4–10)</span><span>${say(3, 10)} kelime</span></div>
+      <div class="satir"><span>Fırsat (4–20, çok aranan)</span><span style="color:var(--sari)">${fir} kelime</span></div></div>`;
+  });
+  $("#motorOzet").innerHTML = kartlar.join("");
+}
+function motorListe(s) {
+  const satir = motorSatirlari(s);
+  let h = '<tr><th>Anahtar kelime</th><th class="s">Google sıra</th><th class="s">Bing sıra</th><th class="s">Yandex sıra</th><th class="s">Toplam gösterim</th><th>Durum</th></tr>';
+  if (!satir.length) h += '<tr><td colspan="6" class="bos">Bu süzgeçte kelime yok.</td></tr>';
+  for (const r of satir.slice(0, durum.mgoster))
+    h += `<tr><td class="k">${kacis(r.ad)}</td>${siraHucre(r.google)}${siraHucre(r.bing)}${siraHucre(r.yandex)}<td class="s">${sayi(r.toplam)}</td>
+      <td class="k">${r.e.map(([c, t]) => `<span class="etiket e-${c}" style="margin:0 4px 0 0">${t}</span>`).join("")}</td></tr>`;
+  $("#mliste").innerHTML = h;
+  $("#mDaha").hidden = satir.length <= durum.mgoster;
+}
+function motorCsv() {
+  const s = V.siteler[durum.site], d = x => x == null ? "" : String(Math.round(x * 10) / 10).replace(".", ",");
+  const h = x => { x = String(x ?? ""); return /[;"\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; };
+  const satirlar = [["Site", "Anahtar kelime", "Google sıra", "Google tıklama", "Google gösterim", "Bing sıra", "Bing tıklama", "Bing gösterim",
+    "Yandex sıra", "Yandex tıklama", "Yandex gösterim", "Durum"]];
+  for (const r of motorSatirlari(s)) satirlar.push([s.site, r.ad, ...["google", "bing", "yandex"].flatMap(m => r[m] ? [d(r[m][0]), r[m][1], r[m][2]] : ["", "", ""]),
+    r.e.map(x => x[1].toLocaleLowerCase("tr")).join(", ")]);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + satirlar.map(r => r.map(h).join(";")).join("\r\n")], {type: "text/csv;charset=utf-8"}));
+  a.download = `${s.site}-google-bing-yandex-${durum.msuzgec}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function motorGenel() {
+  let h = '<tr><th>Site</th>' + ["Google", "Bing", "Yandex"].map(m => `<th class="s">${m} tıklama</th><th class="s">ilk 3</th>`).join("") + "</tr>";
+  for (const s of V.siteler) {
+    h += `<tr><td><b>${kacis(s.site)}</b></td>`;
+    for (const m of ["google", "bing", "yandex"]) {
+      const k = m === "google" ? {simdi: s.donemler[0].toplam, kelimeler: s.kelimeler} : s[m];
+      h += k ? `<td class="s">${sayi(k.simdi[1])}</td><td class="s iyi">${k.kelimeler.filter(x => x[1] && x[1][0] <= 3).length}</td>`
+             : '<td class="s soluk" colspan="2">bağlı değil</td>';
+    }
+    h += "</tr>";
+  }
+  $("#motorGenel").innerHTML = h;
 }
 function gecmis(s, kayit) {
   // kelimenin ay ay sıra geçmişi (eskiden yeniye)
@@ -365,11 +489,16 @@ function ciz() {
   const sz = [["tumu", "Tümü"], ["yukselen", "Yükselenler"], ["dusen", "Düşenler"], ["yeni", "Yeni çıkanlar"], ["kayip", "Kaybolanlar"], ["firsat", "Fırsatlar"]];
   if (durum.tur === "kelimeler" && (s.izlenen || []).length) sz.push(["izlenen", "İzlediklerim"]);
   sekmeler("#suzgec", sz, "suzgec");
-  olcu(s); kirilim(s); grafik(s); dagilim(s); liste(s); bing(s);
+  sekmeler("#msuzgec", [["ihtiyac", "İhtiyaç var"], ["guclu", "Güçlü olduklarımız"], ["farkli", "Bir motorda geride"], ["tumu", "Tümü"]], "msuzgec");
+  olcu(s); kirilim(s); grafik(s); dagilim(s); liste(s);
+  motorGenel(); motorOzet(s); motorListe(s); motorBolumu(s, "bing"); motorBolumu(s, "yandex");
 }
 $("#karsi").onchange = e => { durum.karsi = +e.target.value; durum.goster = 100; ciz(); };
 $("#ara").oninput = e => { durum.ara = e.target.value; durum.goster = 100; liste(V.siteler[durum.site]); };
 $("#csvIndir").onclick = csvIndir;
+$("#mcsv").onclick = motorCsv;
+$("#mara").oninput = e => { durum.mara = e.target.value; durum.mgoster = 100; motorListe(V.siteler[durum.site]); };
+$("#mDaha").onclick = () => { durum.mgoster += 100; motorListe(V.siteler[durum.site]); };
 $("#dahaFazla").onclick = () => { durum.goster += 100; liste(V.siteler[durum.site]); };
 addEventListener("resize", () => V.siteler.length && grafik(V.siteler[durum.site]));
 uyarilar(); ciz();
